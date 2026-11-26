@@ -1,0 +1,1569 @@
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tempo Favorites Redesign</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+/* Tempo › Location › Music › Favorites. Controls follow "Material UI - for TouchTunes (v5.11.1)" (Figma 9pen9UeYBpPFVPwKrGDCcU), Tempo = Color=Secondary #2270a8; page layout from DS 2.0 (Route list). Light-only, like the product. */
+:root{
+  color-scheme: light;
+  --primary:#2270a8; --primary-border:rgba(34,112,168,.5); --primary-tint:rgba(34,112,168,.08); --primary-tint-2:rgba(34,112,168,.14);
+  --text:rgba(25,25,25,.87); --text-2:rgba(25,25,25,.6); --text-3:rgba(25,25,25,.38);
+  --action:rgba(0,0,0,.56); --input-border:rgba(0,0,0,.42); --divider:rgba(0,0,0,.1); --hover:rgba(0,0,0,.04);
+  --surface:#ffffff; --page:#f5f5f5; --box:#f8f8f8; --host:#2c2c2c;
+  --success:#4cad92; --success-ink:#1a6651; --success-tint:#edf7ed;
+  --error:#ff1744; --error-ink:#5f2120; --error-tint:#fdeded;
+  --warn-ink:#663c00; --warn-tint:#fff4e5; --warn-icon:#fd744c; --warning:#fd744c; --moderate:#fd744c; --primary-dark:#1a6093; --error-dark:#f01741; --chip-fill:#f5f5f5;
+  --info-ink:#491979; --info-tint:#f7e4ff;
+  --snack:#292929; --snack-action:#8fc1e6;
+  --note:#fff2a0; --note-ink:#463b00; --note-line:#dcc650;
+  --proto:#1b1d21; --proto-2:#34383f; --proto-ink:#eef0f3; --proto-ink-2:#a9b0ba;
+  --font:"Proxima Nova","proxima-nova","Figtree",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--host);color:var(--text);font-family:var(--font);font-size:14px;line-height:20px;letter-spacing:.17px;-webkit-font-smoothing:antialiased;padding-block:0 24px}
+button,input{font:inherit;color:inherit;letter-spacing:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid #191919;outline-offset:2px}
+p{margin:0}
+svg{display:block}
+.num{font-variant-numeric:tabular-nums}
+.ico{width:20px;height:20px;flex:none;fill:currentColor}
+
+/* ---------- prototype bar (not part of the design) ---------- */
+.proto{background:var(--proto);color:var(--proto-ink);padding-block:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:0;margin-bottom:24px}
+body.test{padding-top:24px}
+.proto h1{font-size:14px;font-weight:700;margin:0}
+.proto h1 span{font-weight:400;color:var(--proto-ink-2)}
+.pgroup{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.pgroup>label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--proto-ink-2)}
+.seg{display:inline-flex;background:var(--proto-2);border-radius:6px;padding:2px;flex-wrap:wrap}
+.seg button{border:0;background:none;color:var(--proto-ink-2);padding:4px 9px;border-radius:4px;font-size:12.5px}
+.seg button[aria-pressed="true"]{background:var(--proto-ink);color:var(--proto)}
+.pbtn{border:1px solid var(--proto-2);background:none;color:var(--proto-ink);padding:4px 10px;border-radius:6px;font-size:12.5px}
+.pbtn:hover{background:var(--proto-2)}
+.pspacer{flex:1}
+.frame-wrap{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+/* ---------- Tempo page frame (from bgm-schedule-v3) ---------- */
+.frame{max-width:1480px;margin:0 auto;display:grid;grid-template-columns:64px minmax(0,1fr);border-radius:12px;overflow:clip;background:var(--page);box-shadow:0 8px 32px rgba(0,0,0,.3)}
+.sidenav{background:linear-gradient(#16a0b6,#2d3e99);padding:8px 2px}
+.sidenav svg{width:60px;height:413px}
+.content{min-width:0;display:flex;flex-direction:column}
+.page-head{background:var(--surface);padding:8px 16px 0}
+.head-row{display:flex;align-items:flex-start;gap:16px;padding-top:8px;flex-wrap:wrap}
+.title-wrap{flex:1;min-width:0}
+.device{display:flex;align-items:center;gap:12px}
+.device-id{display:inline-flex;align-items:center;gap:4px;margin:0;font-size:34px;line-height:1.235;font-weight:400;letter-spacing:.25px}
+.device-id svg{width:24px;height:24px}
+.crumbs{display:flex;align-items:center;gap:8px;margin-top:4px;font-size:14px;line-height:20px;color:var(--text-2);flex-wrap:wrap}
+.crumbs a{color:var(--primary);font-weight:600;text-decoration:none}
+.crumbs .dot{width:3px;height:3px;border-radius:50%;background:var(--text-2)}
+.page-head .tag{padding:1px 6px;border-radius:4px;background:rgba(0,0,0,.06);font-size:13px;line-height:18px;color:var(--text)}
+.head-actions{display:flex;align-items:center;gap:16px;padding-top:4px}
+.status{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 12px;border:1px solid var(--success);border-radius:100px;background:none;color:var(--success);font-size:14px;font-weight:600;letter-spacing:.4px}
+.status svg{width:20px;height:20px}
+.icon-btn{position:relative;width:32px;height:32px;padding:4px;display:grid;place-items:center;border:0;border-radius:100px;background:none;color:var(--action)}
+@media (hover:hover){.icon-btn:hover{background:var(--hover)}}
+.icon-btn svg{width:24px;height:24px}
+.avatar{width:32px;height:32px;display:grid;place-items:center;border-radius:50%;background:#1565c0;color:#fff;font-size:15px;font-weight:700}
+.tabs{display:flex;gap:0;margin-top:8px;overflow-x:auto;scrollbar-width:none}
+.tab{position:relative;flex:none;height:40px;padding:8px 16px;border:0;background:none;font-size:14px;line-height:24px;font-weight:600;letter-spacing:.4px;color:var(--text-2)}
+.tab[aria-selected="true"]{color:var(--primary)}
+.tab[aria-selected="true"]::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--primary)}
+.juke{position:relative;width:42px;height:42px;flex:none}
+.juke>div,.juke div{position:absolute}
+.juke .j-frame{inset:3.33% 13.33%}.juke .j-ang{inset:3.14% 3.16%}.juke .j-glow{inset:-22.94% -28.52% -29.12% -30%}
+.juke .j-glow img{width:100%;height:100%;display:block}
+.juke .j-body{inset:-5.18% 12.44% -5.18% 12.46%;background:#000;border:.07px solid #363636;border-radius:3.375px}
+.juke .j-top{inset:0 0 10.22% 0;background:#000;border:.07px solid #363636;border-radius:3.375px 3.375px 1.055px 1.055px}
+.juke .j-scr{inset:3.41% 6.91% 14.77% 6.92%;overflow:hidden;background:#170c20;border-radius:1.266px 1.266px .422px .422px}
+.juke .j-scr img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.juke .j-scr img.ov{mix-blend-mode:overlay}
+.juke .j-base{inset:89.78% 0 0 0}
+.juke .j-base>div{inset:11.14% 2.13% 11.08% 2.13%;background:#030303;border:.07px solid #363636;border-radius:.563px .563px 2.672px 2.672px}
+.juke .j-logo{inset:86.9% 79.36% 12.08% 6.81%}
+.juke .j-logo svg{display:block;width:100%;height:100%}
+
+main{padding:16px 16px 24px;display:flex;flex-direction:column;gap:16px;min-width:0}
+.subtabs{margin:-8px 0 0;border-bottom:1px solid var(--divider)}
+.dhead{display:flex;align-items:baseline;justify-content:space-between;gap:8px 16px;flex-wrap:wrap;padding:4px 4px 0}
+.dtitle{margin:0;font-size:24px;line-height:1.334;font-weight:400;letter-spacing:0;color:var(--text)}
+.dmeta{font-size:24px;line-height:1.334;color:var(--text);white-space:nowrap}
+.card{background:var(--surface);border-radius:16px;min-width:0;box-shadow:0 5px 22px rgba(0,0,0,.04),0 0 0 .5px rgba(0,0,0,.03);overflow:clip}
+.card:has(.split-btn){overflow:visible;position:relative;z-index:5} /* let the actions menu hang over the table card */
+.card-head{display:flex;flex-wrap:wrap;align-items:center;gap:12px 24px;padding:20px 16px 0}
+.h3{margin:0;font-size:20px;line-height:1.3;font-weight:700;letter-spacing:.15px}
+.body2{font-size:14px;line-height:20px;color:var(--text-2)}
+.caption{font-size:12px;line-height:16px;letter-spacing:.4px;color:var(--text-2)}
+hr{margin:0;border:0;border-top:1px solid var(--divider)}
+
+/* capacity */
+.cap{display:flex;flex-direction:column;gap:6px;min-width:240px;flex:1;max-width:420px}
+.cap-top{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.cap-top strong{font-size:16px;line-height:24px;font-weight:700;letter-spacing:.15px}
+.cap.full .cap-top strong,.cap.over .cap-top strong{color:var(--error)}
+.progress{height:4px;border-radius:0;background:rgba(34,112,168,.4);overflow:hidden;display:flex} /* <Progress> | Linear, Determinate, Secondary */
+.progress i{display:block;height:100%}
+.progress .p-fav{background:var(--primary)} .progress .p-add{background:var(--success)} .progress .p-over{background:var(--error)}
+.cap.full .progress .p-fav{background:var(--error)}
+.meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap;color:var(--text-2);margin-left:auto}
+.meta .ico{width:16px;height:16px;color:var(--action)}
+.meta .sep{width:3px;height:3px;border-radius:50%;background:var(--text-2)}
+
+/* <Alert> Standard (Material UI - for TouchTunes (v5.11.1)): radius 12, padding 6 16, icon 22, text 8px 0, action = small text button in content colour */
+.alert{display:flex;align-items:flex-start;margin:0 16px 16px;padding:6px 16px;border-radius:12px;flex-wrap:wrap}
+.alert>.ico{width:22px;height:22px;margin:7px 12px 7px 0}
+.alert .a-msg{flex:1;min-width:220px;padding:8px 0;font-size:14px;line-height:1.43;letter-spacing:.17px}
+.alert .a-msg b{font-weight:700}
+.alert .a-act{display:flex;gap:8px;align-items:center;padding:4px 0 0 16px;flex-wrap:wrap}
+.alert .a-act .btn{color:inherit;border-color:transparent;background:none;min-height:30px;padding:4px 5px;font-size:13px;line-height:22px;letter-spacing:.46px}
+.alert .a-act .btn:hover{background:rgba(102,60,0,.06)}
+.alert.warn{background:var(--warn-tint);color:var(--warn-ink)}.alert.warn>.ico{color:var(--warn-icon)}
+.alert.info{background:var(--info-tint);color:var(--info-ink)}
+
+/* toolbar */
+.toolbar{display:flex;flex-wrap:wrap;gap:12px 16px;align-items:center;padding:16px 16px 20px}
+.tcard .sechead:first-child{padding-top:16px}
+/* Search field = DS 2.0 search button, state "On clic" (Figma MrddiDwJLr2HfEVy3CRrlZ 1542:111811): 368px pill, 1px action/active border,
+   padding 6px 16px, SearchRounded 20px (overhangs 4px left), gap 8, input 16/24 .15, placeholder text/disabled, close icon 20px on the right */
+.search{position:relative;flex:0 1 368px;min-width:240px}
+.search>.ico{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:20px;height:20px;color:var(--action);pointer-events:none}
+.search input{width:100%;height:36px;padding:5px 40px 5px 40px;border:1px solid var(--action);border-radius:100px;background:var(--surface);font-size:16px;line-height:24px;letter-spacing:.15px;color:var(--text);-webkit-appearance:none;appearance:none}
+.search input::placeholder{color:rgba(25,25,25,.38)}
+.search input::-webkit-search-cancel-button{display:none}
+@media (hover:hover){.search input:hover{border-color:rgba(0,0,0,.87)}}
+.search input:focus-visible{outline:0;border-color:var(--primary);box-shadow:inset 0 0 0 1px var(--primary)}
+.search .clear{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:28px;height:28px;padding:4px;border:0;border-radius:100px;background:none;color:var(--action);display:grid;place-items:center}
+.search .clear:hover{background:var(--hover)}
+.search .clear .ico{position:static;transform:none;width:20px;height:20px}
+/* <ButtonGroup> (DS 2.0, Figma MrddiDwJLr2HfEVy3CRrlZ 43:29658): 1px action/active border, radius 20, padding-right 8, white;
+   buttons radius 100, 6px 16px, 14/24 semibold .4; selected = filled (Tempo #2270a8 instead of NORAD green), white text;
+   unselected text action/active; count bubble 20px min, 0 4px, radius 100, action/hover fill, 12px regular .4, gap 4 */
+.tgroup{display:inline-flex;align-items:center;border:1px solid var(--action);border-radius:20px;overflow:hidden;background:var(--surface)} /* no extra right padding: the selected pill must reach either end */
+.tgroup button{border:0;border-radius:100px;background:none;padding:6px 16px;font-size:14px;line-height:24px;font-weight:600;letter-spacing:.4px;color:var(--action);display:inline-flex;gap:4px;align-items:center}
+@media (hover:hover){.tgroup button:not([aria-pressed="true"]):hover{background:var(--hover)}}
+.tgroup button[aria-pressed="true"]{background:var(--primary);color:#fff}
+.count{min-width:20px;height:20px;padding:0 4px;border-radius:100px;background:rgba(0,0,0,.04);color:inherit;font-size:12px;line-height:20px;font-weight:400;text-align:center;letter-spacing:.4px}
+.tgroup button[aria-pressed="true"] .count{background:rgba(255,255,255,.16)}
+.results{margin-left:auto;color:var(--text-2);font-size:16px;line-height:1.5;letter-spacing:.15px;white-space:nowrap}
+.results b{font-size:20px;line-height:1.3;font-weight:700}
+.tb-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+
+/* <Button> Color=Secondary (Material UI - for TouchTunes (v5.11.1)): radius 8; Medium 36 (6 16 / text 6 8), Small 30 (4 10 / text 4 5); outlined = 1px primary TEMPO/states/outlinedBorder */
+.btn{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:36px;padding:5px 15px;border-radius:8px;border:1px solid rgba(34,112,168,.5);background:transparent;color:var(--primary);font-size:14px;line-height:24px;font-weight:600;letter-spacing:.4px;white-space:nowrap;transition:background-color 150ms ease-out}
+.btn .ico,.btn>svg{width:20px;height:20px;margin-left:-4px}
+.btn.sm{min-height:30px;padding:3px 9px;font-size:13px;line-height:22px;letter-spacing:.46px}
+.btn.sm .ico,.btn.sm>svg{width:18px;height:18px}
+.btn.solid{background:var(--primary);border-color:var(--primary);color:#fff}
+.btn.danger{background:var(--error);border-color:var(--error);color:#fff}
+.btn.text{border-color:transparent;background:none;padding:6px 8px}
+.btn.text.sm{padding:4px 5px}
+.btn:disabled{border-color:rgba(0,0,0,.12);background:transparent;color:rgba(0,0,0,.38);cursor:not-allowed}
+.btn.solid:disabled,.btn.danger:disabled{background:rgba(0,0,0,.12);border-color:transparent}
+.btn.text:disabled{background:none;border-color:transparent}
+@media (hover:hover) and (pointer:fine){
+  .btn:not(:disabled):hover{background:rgba(34,112,168,.04)}
+  .btn.solid:not(:disabled):hover{background:var(--primary-dark);border-color:var(--primary-dark)}
+  .btn.danger:not(:disabled):hover{background:var(--error-dark);border-color:var(--error-dark)}
+}
+.btn:focus-visible{outline:0;box-shadow:0 0 0 3px rgba(34,112,168,.3)}
+.linkbtn{border:0;background:none;color:var(--primary);font-weight:600;font-size:14px;padding:4px;margin:-4px;border-radius:8px}
+.linkbtn.sm{font-size:13px;letter-spacing:.46px}
+@media (hover:hover){.linkbtn:hover{background:rgba(34,112,168,.04)}}
+
+/* Checkbox (library Checkbox, 18px box in a 36px hit area) */
+/* <Checkbox> from "Material UI - for TouchTunes (v5.11.1)" (set 6543:43052). Tempo = Color=Secondary (primary TEMPO/main #2270a8);
+   Medium: 24px Material icon in 9px padding = 42px round hit area. Unchecked = CheckBoxOutlineBlankOutlined in text/secondary;
+   checked = CheckBoxFilled; indeterminate = IndeterminateCheckBoxFilled; hover = primary TEMPO/states/hover (4%);
+   focus = primary TEMPO/states/focusVisible (30%); disabled = action/disabled (38%). */
+.cb{position:relative;width:42px;height:42px;flex:none;display:grid;place-items:center;margin:-12px;border-radius:50%;transition:background-color 120ms ease-out}
+.cb input{position:absolute;inset:0;margin:0;opacity:0;cursor:pointer;border-radius:50%;z-index:1}
+.c-chk,.cbcol{cursor:pointer}
+.cb .bx{position:relative;pointer-events:none;width:18px;height:18px;border:2px solid var(--text-2);border-radius:2px;display:grid;place-items:center;transition:background-color 120ms ease-out,border-color 120ms ease-out}
+.cb .bx svg{position:absolute;inset:0;margin:auto;width:16px;height:16px;fill:#fff;opacity:0}
+.cb input:checked+.bx,.cb input:indeterminate+.bx{background:var(--primary);border-color:var(--primary)}
+.cb input:checked+.bx .ck{opacity:1}
+.cb input:indeterminate+.bx .dash{opacity:1}
+.cb input:indeterminate+.bx .ck{opacity:0}
+.cb input:disabled+.bx{border-color:rgba(0,0,0,.38)}
+.cb input:disabled:checked+.bx{background:rgba(0,0,0,.38);border-color:transparent}
+.cb input:disabled{cursor:not-allowed}
+.cb:has(input:focus-visible){background:rgba(34,112,168,.3)}
+@media (hover:hover){.cb:has(input:not(:disabled)):hover{background:rgba(34,112,168,.04)}}
+
+/* selection bar */
+.selbar{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;margin:0 24px 12px;padding:6px 8px 6px 16px;border-radius:8px;background:var(--primary-tint-2);min-height:48px}
+.selbar b{font-weight:700;color:var(--primary);margin-right:auto}
+
+/* section heads */
+.sechead{display:flex;align-items:center;gap:8px;padding:12px 24px;font-size:14px;line-height:22px;font-weight:700;letter-spacing:.1px;flex-wrap:wrap}
+.sechead .n{color:var(--text-2);font-weight:400}
+.sechead .btn{margin-left:auto}
+
+/* Data grid */
+.gridwrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th{font-weight:600;color:var(--text);text-align:left;font-size:14px;line-height:24px;letter-spacing:.4px;height:56px;padding:16px;border-bottom:1px solid var(--divider);white-space:nowrap;background:var(--surface)}
+th button{border:0;background:none;padding:0;font-weight:inherit;display:inline-flex;gap:4px;align-items:center}
+th .ico{width:18px;height:18px;color:var(--action);margin:0 4px}
+th .ico.desc{transform:rotate(180deg)}
+td{height:52px;padding:12px 16px;border-bottom:1px solid var(--divider);vertical-align:middle}
+td.n,th.n{text-align:right}
+
+.c-chk{width:46px;padding:0 0 0 4px}
+.c-chk .cb{margin:0}
+.c-act{width:1%;white-space:nowrap;text-align:right;padding-right:16px}
+tbody tr{transition:background-color 120ms ease-out}
+@media (hover:hover){tbody tr:hover{background:var(--hover)}}
+tr.sel{background:rgba(34,112,168,.08)}
+@media (hover:hover){tr.sel:hover{background:var(--primary-tint-2)}}
+tr.unavail td{color:var(--text-3)}
+tr.d-add,tr.p-add{background:rgba(76,173,146,.06)}
+tr.rem .ttl{text-decoration:line-through;text-decoration-color:var(--text-2)}
+tr.rem td{color:var(--text-2)}
+.tcell{display:flex;gap:12px;align-items:center;min-width:220px}
+.art{width:40px;height:40px;border-radius:4px;background:#e0e0e0;flex:none;display:grid;place-items:center;color:rgba(0,0,0,.38)}
+.art svg{width:20px;height:20px;fill:currentColor}
+.t1{display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center}
+.ttl{font-weight:700;letter-spacing:.1px;color:var(--text)}
+.t2{color:var(--text-2);font-size:12px;line-height:16px;letter-spacing:0}
+.marks{display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center;margin-top:4px}
+.marks:empty{display:none}
+.tag{display:inline-flex;align-items:center;height:20px;padding:0 6px;border-radius:4px;background:rgba(0,0,0,.06);font-size:12px;line-height:20px;letter-spacing:.4px;color:var(--text-2)}
+.onecr{display:inline-flex;align-items:center;gap:3px;font-size:12px;font-weight:700;letter-spacing:.4px;color:var(--text-2)}
+.onecr svg{width:14px;height:14px;fill:#e53935}
+/* <Chip> Small (Material UI - for TouchTunes (v5.11.1)): 24px, radius 100, padding 3px 4px + label 0 6px, 13/18 .16; draft = Default filled #f5f5f5; pending = Outlined in success/error; waiting = Outlined warning */
+.chip{display:inline-flex;align-items:center;gap:4px;height:24px;padding:3px 10px;border:1px solid transparent;border-radius:100px;font-size:13px;line-height:18px;letter-spacing:.16px;white-space:nowrap}
+.chip svg{width:16px;height:16px;fill:currentColor;margin-left:-4px}
+.chip.d-add,.chip.d-rem{background:#f5f5f5;color:var(--text)}
+.chip.p-add{border-color:var(--success);color:var(--success-ink)} /* override: main-colour border, darker text for contrast */
+.chip.p-rem{border-color:var(--error);color:#6b1e35}
+.chip.p-copy{border-color:var(--primary);color:var(--primary-dark);max-width:100%;white-space:nowrap}
+.chip.p-copy .cl{overflow:hidden;text-overflow:ellipsis;min-width:0;max-width:100px}
+.chip.p-copy .ct{flex:none;margin-left:4px}
+.c-act .btn{display:flex;margin-left:auto}
+.chip.wait{border-color:var(--warning);color:var(--warn-ink)}
+.m-only{display:none}
+.loadmore{display:flex;flex-direction:column;align-items:center;gap:6px;padding:16px}
+.empty{padding:32px 24px;text-align:center;color:var(--text-2)}
+
+/* catalog list */
+.cat{border-top:8px solid var(--page)}
+.res{display:flex;gap:12px;align-items:center;min-height:60px;padding:8px 24px;border-bottom:1px solid var(--divider)}
+.res .cbcol{width:42px;flex:none;display:flex;margin-left:-12px}
+.res .cbcol .cb,.cathead .cbcol .cb{margin:0}
+.res .grow{flex:1;min-width:0}
+.res .ttl{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.res .plays{color:var(--text-2);white-space:nowrap}
+.res.sel{background:rgba(34,112,168,.08)}
+.cathead .cbcol{width:42px;flex:none;margin-left:-12px;margin-right:2px}
+.catmsg{margin:0 24px 12px}
+
+/* changes bar */
+.changes{position:sticky;bottom:12px;z-index:20;background:var(--surface);border-radius:16px;box-shadow:0 3px 5px -1px rgba(0,0,0,.2),0 6px 10px rgba(0,0,0,.14),0 1px 18px rgba(0,0,0,.12);padding:8px 16px;display:flex;flex-direction:column}
+.crow{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;padding:8px 0}
+.crow+.crow{border-top:1px solid var(--divider)}
+.crow .cicon{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;flex:none}
+.crow .cicon svg{width:20px;height:20px;fill:currentColor}
+.crow .cicon.draft{background:var(--primary-tint-2);color:var(--primary)}
+.crow .cicon.pend{background:var(--success-tint);color:var(--success)}
+.crow .cicon.wait{background:var(--warn-tint);color:var(--warn-icon)}
+.crow .txt{flex:1;min-width:220px}
+.crow .txt b{font-weight:700;font-size:16px;line-height:24px;letter-spacing:.15px;display:block}
+.crow .acts{display:flex;gap:8px;flex-wrap:wrap}
+
+/* notes */
+.note{background:var(--note);color:var(--note-ink);border:1px solid var(--note-line);border-radius:3px;padding:7px 10px;font-size:12.5px;line-height:1.4;max-width:64ch;letter-spacing:0;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+.note b{font-weight:700;text-transform:uppercase;font-size:10.5px;letter-spacing:.08em;margin-right:4px}
+.noterow{display:flex;flex-wrap:wrap;gap:8px;padding:0 24px 16px}
+.notes-off .note,.notes-off .noterow{display:none}
+
+/* <Dialog> Max Width=small (Material UI - for TouchTunes (v5.11.1)): radius 20, elevation 24, title p16 h3 + close 24, content p24 between dividers, actions p16 gap 8 */
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:50;display:grid;place-items:center;padding:16px}
+.dialog{background:var(--surface);border-radius:20px;overflow:clip;width:min(600px,100%);max-height:calc(100dvh - 32px);display:flex;flex-direction:column;box-shadow:0 11px 15px -7px rgba(0,0,0,.2),0 24px 38px 3px rgba(0,0,0,.14),0 9px 46px 8px rgba(0,0,0,.12)}
+.d-head{display:flex;align-items:center;gap:16px;padding:16px}
+.d-head h2{flex:1;min-width:0}
+.d-body{min-height:0;overflow-y:auto;padding:24px;display:flex;flex-direction:column;gap:16px;border-top:1px solid var(--divider);border-bottom:1px solid var(--divider)}
+.d-foot{display:flex;justify-content:flex-end;gap:8px;padding:16px;flex-wrap:wrap}
+.sum h4{margin:0 0 6px;font-size:14px;line-height:22px;font-weight:700;letter-spacing:.1px;display:flex;gap:8px;align-items:center}
+.sum ul{margin:0;padding-left:20px;color:var(--text-2);display:flex;flex-direction:column;gap:2px}
+.box{background:var(--box);border-radius:12px;padding:12px 16px;color:var(--text-2);display:flex;gap:10px;align-items:flex-start}
+.box .ico{color:var(--action);margin-top:0}
+.loclist{border:1px solid var(--divider);border-radius:12px;overflow:hidden}
+.loc{display:flex;gap:12px;align-items:center;padding:10px 16px 10px 21px;border-bottom:1px solid var(--divider);cursor:pointer}
+.loc:last-child{border-bottom:0}
+.loc .grow{flex:1;min-width:0}
+.loc .fs{color:var(--text-2);white-space:nowrap}
+.loc .fs.full{color:var(--error)}
+
+/* Snackbar */
+.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,16px);opacity:0;display:flex;align-items:center;gap:8px;min-width:288px;max-width:calc(100% - 32px);padding:6px 16px;min-height:48px;border-radius:12px;background:var(--snack);color:#fff;font-size:14px;line-height:20px;box-shadow:0 3px 5px -1px rgba(0,0,0,.2),0 6px 10px rgba(0,0,0,.14),0 1px 18px rgba(0,0,0,.12);transition:opacity 200ms ease-out,transform 200ms ease-out;pointer-events:none;z-index:80}
+.toast.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+.toast span{flex:1;padding:8px 0;letter-spacing:.17px}
+.toast button{border:0;background:none;color:var(--snack-action);font-weight:600;font-size:13px;line-height:22px;letter-spacing:.46px;padding:4px 5px;border-radius:8px}
+.toast button:hover{background:rgba(255,255,255,.08)}
+
+/* questions panel */
+.oq{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:16px;max-width:1480px;margin:24px auto 0;color:var(--proto-ink);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:0}
+.oq section{background:var(--proto);border-radius:12px;padding:16px 18px}
+.oq h3{margin:0 0 8px;font-size:15px;font-weight:600}
+.oq ol,.oq ul{margin:0;padding-left:20px;color:var(--proto-ink-2);font-size:13.5px;display:flex;flex-direction:column;gap:6px}
+.oq b{color:var(--proto-ink);font-weight:600}
+
+
+/* Locations side panel (from the user's Tempo screenshot: 12px-radius search + outlined "+ Add", bold name over ID) */
+.split{display:grid;grid-template-columns:300px minmax(0,1fr);gap:16px;align-items:start}
+.fcol{min-width:0;display:flex;flex-direction:column;gap:16px}
+.lp{position:sticky;top:16px;max-height:calc(100vh - 32px);display:flex;flex-direction:column}
+.lp-head{display:flex;align-items:baseline;gap:8px;padding:20px 16px 0}
+.lp-head .n{color:var(--text-2)}
+.lp-tools{display:flex;gap:8px;padding:16px}
+.lsearch{position:relative;flex:1;min-width:0}
+.lsearch>.ico{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:20px;height:20px;color:var(--action);pointer-events:none}
+.lsearch input{width:100%;height:36px;padding:5px 16px 5px 40px;border:1px solid var(--action);border-radius:100px;background:var(--surface);font-size:16px;line-height:24px;letter-spacing:.15px;color:var(--text);-webkit-appearance:none;appearance:none} /* same as the main search (DS 2.0 1542:111811) */
+.lsearch input::-webkit-search-cancel-button{display:none}
+@media (hover:hover){.lsearch input:hover{border-color:rgba(0,0,0,.87)}}
+.lsearch input::placeholder{color:rgba(25,25,25,.38)}
+.lsearch input:focus-visible{outline:0;border-color:var(--primary);box-shadow:inset 0 0 0 1px var(--primary)}
+.btn.lp-add{border-radius:12px;border-color:var(--primary);color:var(--primary);font-weight:700;padding:6px 12px;gap:4px}
+.btn.lp-add svg{width:20px;height:20px;fill:currentColor}
+.lp-list{list-style:none;margin:0;padding:0;overflow-y:auto;border-top:1px solid var(--divider)}
+.lrow{display:flex;align-items:center;gap:8px;width:100%;text-align:left;border:0;border-bottom:1px solid var(--divider);background:none;padding:12px 16px;min-height:68px}
+.lrow .lt{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.lrow .ln{font-weight:700;font-size:14px;line-height:22px;letter-spacing:.1px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lrow .lid{display:flex;align-items:center;gap:8px;font-size:14px;line-height:20px;color:var(--text)}
+.lrow .lid svg{width:20px;height:20px;fill:#7e57c2}
+.lrow .lbadge{flex:none;font-size:12px;line-height:16px;letter-spacing:.4px;padding:2px 8px;border-radius:100px;border:1px solid currentColor;white-space:nowrap}
+.lrow .lbadge.d{color:var(--action)} .lrow .lbadge.p{color:var(--success)}
+@media (hover:hover){.lrow:hover{background:var(--hover)}}
+.lrow[aria-current="page"]{background:var(--primary-tint-2);box-shadow:inset 3px 0 var(--primary)}
+.lp-empty{padding:16px;color:var(--text-2)}
+@media (max-width:1100px){.split{grid-template-columns:1fr}.lp{position:static;max-height:none}.lp-list{max-height:280px}}
+.nv{display:inline-flex;align-items:center;gap:8px;font-size:14px;line-height:20px;letter-spacing:.17px;color:var(--text)}
+.nv-sw{position:relative;width:34px;height:20px;border-radius:10px;background:var(--primary)}
+.nv-sw::after{content:"";position:absolute;top:2px;right:2px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.24)}
+.lrow .lid{color:var(--primary);font-weight:600}
+
+/* TouchTunes playlists dialog */
+.dialog.wide{width:min(900px,100%)}
+.d-head .icon-btn{margin-right:-8px}
+.pl-split{display:grid;grid-template-columns:200px minmax(0,1fr);border:1px solid var(--divider);border-radius:8px;overflow:hidden;min-height:380px}
+.pl-cats{display:flex;flex-direction:column;border-right:1px solid var(--divider);background:var(--box);padding:8px 0}
+.pl-cats button{border:0;background:none;text-align:left;padding:10px 16px;font-size:14px;line-height:20px;letter-spacing:.17px;color:var(--text)}
+@media (hover:hover){.pl-cats button:hover{background:var(--hover)}}
+.pl-cats button[aria-selected="true"]{background:rgba(34,112,168,.08);color:var(--primary);font-weight:600;box-shadow:inset 3px 0 var(--primary)}
+.pl-list{list-style:none;margin:0;padding:0;overflow:auto;max-height:440px}
+.pl-list button{display:flex;align-items:center;gap:12px;width:100%;border:0;border-bottom:1px solid var(--divider);background:none;text-align:left;padding:12px 16px}
+@media (hover:hover){.pl-list button:hover{background:rgba(34,112,168,.04)}}
+.pl-list .grow{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.pl-list svg{width:20px;height:20px;fill:var(--action);flex:none}
+.pl-tools{display:flex;align-items:center;gap:12px;justify-content:space-between;flex-wrap:wrap}
+.pl-table{border:1px solid var(--divider);border-radius:8px;max-height:440px;overflow:auto}
+.pl-table th{position:sticky;top:0;z-index:2}
+@media (max-width:700px){.pl-split{grid-template-columns:1fr}.pl-cats{flex-direction:row;overflow-x:auto;border-right:0;border-bottom:1px solid var(--divider);padding:0}.pl-cats button{white-space:nowrap}}
+
+/* Search top right (DS 2.0 Reports pattern, Figma zzN3H1Pl4spV5Fm4hIR1Sj 9559:9262): outlined 36px icon button that opens the 368px search field */
+.card-head{justify-content:space-between}
+.ch-actions{margin-left:auto;display:flex;gap:16px;align-items:center;min-width:0}
+.ch-actions .search{width:368px;max-width:100%;flex:0 1 368px}
+.icon-btn.outlined{width:36px;height:36px;padding:5px;border:1px solid var(--action);color:var(--action)}
+.icon-btn.outlined .ico{width:24px;height:24px}
+/* Filter chip (DS 2.0 <Chip> default fill + CancelRounded) */
+.fchip{display:inline-flex;align-items:center;gap:2px;height:32px;padding:4px 4px 4px 10px;border-radius:100px;background:#f5f5f5;color:var(--text);font-size:13px;line-height:18px;letter-spacing:.16px;white-space:nowrap}
+.fchip button{border:0;background:none;padding:0;width:24px;height:24px;display:grid;place-items:center;color:rgba(0,0,0,.26);border-radius:50%}
+.fchip button:hover{color:rgba(0,0,0,.56)}
+.fchip .ico{width:24px;height:24px}
+
+/* Keep the table inside its card (no sideways scrolling to reach Remove / Cancel) */
+.tcard .tcell{min-width:160px}
+.tcard .chip{height:auto;min-height:24px}
+@media (max-width:1360px){.tcard .chip{white-space:normal}} /* wraps only on narrow screens */
+.tcard td{padding-left:12px;padding-right:12px}
+.tcard .c-chk{padding-left:4px;padding-right:0}
+.tcard .c-act{padding-right:16px}
+
+/* Split button (MUI ButtonGroup contained + ArrowDropDown): Remove is the primary action, other actions in the menu */
+.split-btn{position:relative;display:inline-flex}
+.split-btn .sb-main{border-radius:8px 0 0 8px}
+.split-btn .sb-arrow{border-radius:0 8px 8px 0;padding:5px 6px;border-left:1px solid rgba(255,255,255,.5)}
+.split-btn .sb-arrow:disabled{border-left-color:rgba(0,0,0,.12)}
+.split-btn .sb-arrow svg{width:24px;height:24px;fill:currentColor}
+.sb-menu{position:absolute;top:calc(100% + 4px);left:0;min-width:100%;background:var(--surface);border-radius:8px;padding:8px 0;z-index:30;box-shadow:0 5px 5px -3px rgba(0,0,0,.2),0 8px 10px 1px rgba(0,0,0,.14),0 3px 14px 2px rgba(0,0,0,.12)}
+.sb-menu button{display:block;width:100%;text-align:left;border:0;background:none;padding:6px 16px;font-size:16px;line-height:24px;letter-spacing:.15px;color:var(--text);white-space:nowrap}
+.sb-menu button:hover,.sb-menu button:focus-visible{background:var(--hover);outline:0}
+.sb-menu button:disabled{color:rgba(0,0,0,.38);background:none;cursor:default}
+@media (prefers-reduced-motion:reduce){.toast,.btn,tbody tr{transition:none}}
+.c-last,.c-added,td.n{white-space:nowrap}
+@media (max-width:1500px){.c-avail{display:none}}
+@media (max-width:1280px){.c-style{display:none}}
+@media (max-width:899px){.frame{grid-template-columns:1fr}.sidenav{display:none}.head-actions{display:none}}
+@media (max-width:700px){
+  .c-artist,.c-style,.c-last,.c-added,.c-avail,.c-act{display:none}
+  .m-only{display:block}
+  .tcell{min-width:0}
+  .device-id{font-size:26px}
+  main{padding:12px 8px 16px}
+  .card-head,.toolbar,.noterow{padding-left:16px;padding-right:16px}
+  .alert,.selbar,.catmsg{margin-left:16px;margin-right:16px}
+  .sechead,.res{padding-left:16px;padding-right:16px}
+  .c-chk{padding-left:16px}
+  .res .plays{display:none}
+}
+
+/* ---------- Pulse alignment ----------
+   Values from the Pulse code (TouchTunes/web-pulse, packages/components/src/theme + components) with the Tempo palette
+   from packages/components/.storybook/themes.ts. These win over the Figma library values above. */
+:root{
+  --text:#222222; --text-2:#717275; --error:#ff4656; --error-dark:#cc3845;
+  --primary-dark:#1b5a86;            /* contained hover = 20% black over primary */
+  --divider:rgba(0,0,0,.12);         /* theme.palette.divider */
+  --grey-600:#757575; --grey-200:#ececec;
+  --snack:#313131;                    /* notistack default */
+}
+/* MuiButton: radius 12; medium 8px 16px, 14/1.4 semibold .4; small 6px 10px, 13/1.4 .46; text = same padding, hover brightness .8, no fill */
+.btn{border-radius:12px;min-height:0;padding:8px 16px;line-height:1.4;letter-spacing:.4px}
+.btn.sm{padding:6px 10px;line-height:1.4;letter-spacing:.46px}
+.btn.text{padding:8px 16px}
+.btn.text.sm{padding:6px 10px}
+@media (hover:hover) and (pointer:fine){
+  .btn:not(:disabled):hover{background:rgba(34,112,168,.05)}
+  .btn.text:not(:disabled):hover{background:none;filter:brightness(.8)}
+}
+.alert .a-act .btn{padding:6px 10px}
+.linkbtn{border-radius:12px}
+/* ButtonGroup split button: same 12px outer radius */
+.split-btn .sb-main{border-radius:12px 0 0 12px}
+.split-btn .sb-arrow{border-radius:0 12px 12px 0;padding:6px 8px}
+.split-btn.sm .sb-arrow{padding:3px 4px}
+.split-btn.sm .sb-arrow svg{width:20px;height:20px}
+/* MuiMenu: paper radius 12, items 8px 16px */
+.sb-menu{border-radius:12px}
+.sb-menu button{padding:8px 16px}
+/* SearchInput: 38px pill, 1px grey.600 border in every state, 24px SearchRounded in grey.600, 14px text, 18px close icon */
+.search input,.lsearch input{height:38px;padding:8px 36px 8px 38px;border-color:var(--grey-600);font-size:14px;line-height:20px;letter-spacing:.17px}
+.lsearch input{padding-right:12px}
+.search input::placeholder,.lsearch input::placeholder{color:rgba(34,34,34,.42)}
+@media (hover:hover){.search input:hover,.lsearch input:hover{border-color:var(--grey-600)}}
+.search input:focus-visible,.lsearch input:focus-visible{border-color:var(--grey-600);box-shadow:none}
+.search>.ico,.lsearch>.ico{left:8px;width:24px;height:24px;color:var(--grey-600)}
+.search .clear{right:6px;color:var(--grey-600)}
+.search .clear .ico{width:18px;height:18px}
+@media (hover:hover){.search .clear:hover{background:none}}
+/* MuiTab: 42px, 8px 16px, hover = 8% primary fill + secondary text */
+.tab{height:42px;line-height:1.43;letter-spacing:.17px;transition:background-color 150ms ease-out}
+@media (hover:hover){.tab:hover{background:rgba(34,112,168,.08);color:var(--text-2)}}
+/* MuiIconButton: 6px padding, no hover fill */
+@media (hover:hover){.icon-btn:hover{background:none}}
+/* MuiDataGrid: header/cell padding 16px 8px, semibold titles, no column separators, sortable header hover = grey.200,
+   no row hover, selected row = 8% primary */
+th{padding:16px 8px;letter-spacing:.17px}
+td,.tcard td{padding:16px 8px}
+.tcard .c-chk,th.c-chk{padding:0 0 0 8px}
+.tcard .c-act{padding-right:16px}
+th:has(button){transition:background-color 150ms ease-out}
+@media (hover:hover){
+  th:has(button):hover{background:var(--grey-200)}
+  tbody tr:hover{background:transparent}
+  tr.sel:hover{background:rgba(34,112,168,.08)}
+}
+/* Dialog paper: theme shape radius 16 */
+.dialog{border-radius:16px}
+/* notistack default snackbar: #313131, radius 4; kept centred at the bottom (user's choice) */
+.toast{left:50%;bottom:20px;transform:translate(-50%,16px);border-radius:4px;box-shadow:0 3px 5px -1px rgba(0,0,0,.2),0 6px 10px 0 rgba(0,0,0,.14),0 1px 18px 0 rgba(0,0,0,.12)}
+.toast.show{transform:translate(-50%,0)}
+.toast button{border-radius:12px}
+</style>
+
+<div id="proto"></div>
+<div class="frame-wrap">
+<div class="frame">
+  <nav class="sidenav" aria-label="Tempo">
+    <!-- Figma Sidenav icons (OS3 Settings, I9903:5324;13:7520) -->
+    <svg viewBox="0 0 60 413" fill="none" aria-hidden="true">
+      <path d="M27.131 22.7885C27.131 24.0992 26.0703 25.1645 24.7601 25.1645C23.4498 25.1645 22.3891 24.0992 22.3891 22.7885C22.3891 21.4778 23.4498 20.4125 24.7601 20.4125C26.0703 20.4125 27.131 21.4778 27.131 22.7885Z" fill="white"/>
+      <path d="M33.3392 26.2507C33.3392 27.5614 32.2785 28.6266 30.9682 28.6266C29.658 28.6266 28.5973 27.5666 28.5973 26.2507C28.5973 24.9399 29.658 23.8747 30.9682 23.8747C32.2785 23.8747 33.3392 24.9399 33.3392 26.2507Z" fill="white"/>
+      <path d="M33.3392 33.4935C33.3392 34.8042 32.2785 35.8695 30.9682 35.8695C29.658 35.8695 28.5973 34.8042 28.5973 33.4935C28.5973 32.1828 29.658 31.1175 30.9682 31.1175C32.2785 31.1123 33.3392 32.1775 33.3392 33.4935Z" fill="white"/>
+      <path d="M39.5058 30.0157C39.5058 31.3264 38.4451 32.3916 37.1348 32.3916C35.8246 32.3916 34.7639 31.3316 34.7639 30.0157C34.7639 28.705 35.8246 27.6397 37.1348 27.6397C38.4451 27.6397 39.5058 28.705 39.5058 30.0157Z" fill="white"/>
+      <path d="M27.131 30.0157C27.131 31.3264 26.0703 32.3916 24.7601 32.3916C23.4498 32.3916 22.3891 31.3264 22.3891 30.0157C22.3891 28.705 23.4498 27.6397 24.7601 27.6397C26.0703 27.6397 27.131 28.705 27.131 30.0157Z" fill="white"/>
+      <path d="M27.131 37.2428C27.131 38.5535 26.0703 39.6188 24.7601 39.6188C23.4498 39.6188 22.3891 38.5535 22.3891 37.2428C22.3891 35.9321 23.4498 34.8668 24.7601 34.8668C26.0703 34.8668 27.131 35.9321 27.131 37.2428Z" fill="white"/>
+      <path d="M37 91H23C21.9 91 21 91.9 21 93V107C21 108.1 21.9 109 23 109H37C38.1 109 39 108.1 39 107V93C39 91.9 38.1 91 37 91ZM26 105C25.45 105 25 104.55 25 104V99C25 98.45 25.45 98 26 98C26.55 98 27 98.45 27 99V104C27 104.55 26.55 105 26 105ZM30 105C29.45 105 29 104.55 29 104V96C29 95.45 29.45 95 30 95C30.55 95 31 95.45 31 96V104C31 104.55 30.55 105 30 105ZM34 105C33.45 105 33 104.55 33 104V102C33 101.45 33.45 101 34 101C34.55 101 35 101.45 35 102V104C35 104.55 34.55 105 34 105Z" fill="white"/>
+      <path d="M30 156C30.55 156 31.0208 155.804 31.4125 155.413C31.8042 155.021 32 154.55 32 154C32 153.45 31.8042 152.979 31.4125 152.588C31.0208 152.196 30.55 152 30 152C29.45 152 28.9792 152.196 28.5875 152.588C28.1958 152.979 28 153.45 28 154C28 154.55 28.1958 155.021 28.5875 155.413C28.9792 155.804 29.45 156 30 156ZM30 165.625C29.8667 165.625 29.7333 165.6 29.6 165.55C29.4667 165.5 29.35 165.433 29.25 165.35C26.8167 163.2 25 161.204 23.8 159.363C22.6 157.521 22 155.8 22 154.2C22 151.7 22.8042 149.708 24.4125 148.225C26.0208 146.742 27.8833 146 30 146C32.1167 146 33.9792 146.742 35.5875 148.225C37.1958 149.708 38 151.7 38 154.2C38 155.8 37.4 157.521 36.2 159.363C35 161.204 33.1833 163.2 30.75 165.35C30.65 165.433 30.5333 165.5 30.4 165.55C30.2667 165.6 30.1333 165.625 30 165.625Z" fill="white"/>
+      <rect x="6" y="188" width="48" height="48" rx="12" fill="white" fill-opacity="0.08"/>
+      <path d="M28 221C26.9 221 25.9583 220.608 25.175 219.825C24.3917 219.042 24 218.1 24 217C24 215.9 24.3917 214.958 25.175 214.175C25.9583 213.392 26.9 213 28 213C28.3833 213 28.7375 213.046 29.0625 213.137C29.3875 213.229 29.7 213.367 30 213.55V205C30 204.45 30.1958 203.979 30.5875 203.588C30.9792 203.196 31.45 203 32 203H34C34.55 203 35.0208 203.196 35.4125 203.588C35.8042 203.979 36 204.45 36 205C36 205.55 35.8042 206.021 35.4125 206.413C35.0208 206.804 34.55 207 34 207H32V217C32 218.1 31.6083 219.042 30.825 219.825C30.0417 220.608 29.1 221 28 221Z" fill="white"/>
+      <path fill-rule="evenodd" clip-rule="evenodd" d="M30 261C28.6155 261 27.2622 261.411 26.111 262.18C24.9599 262.949 24.0627 264.042 23.5328 265.321C23.003 266.6 22.8644 268.008 23.1345 269.366C23.4046 270.723 24.0713 271.971 25.0503 272.95C26.0292 273.929 27.2765 274.595 28.6344 274.865C29.9922 275.136 31.3997 274.997 32.6788 274.467C33.9579 273.937 35.0511 273.04 35.8203 271.889C36.5895 270.738 37 269.384 37 268C37 267.448 37.4477 267 38 267C38.5523 267 39 267.448 39 268C39 269.78 38.4722 271.52 37.4832 273C36.4943 274.48 35.0887 275.634 33.4442 276.315C31.7996 276.996 29.99 277.174 28.2442 276.827C26.4984 276.48 24.8947 275.623 23.636 274.364C22.3774 273.105 21.5202 271.502 21.1729 269.756C20.8257 268.01 21.0039 266.2 21.6851 264.556C22.3663 262.911 23.5198 261.506 24.9999 260.517C26.4799 259.528 28.22 259 30 259C30.5523 259 31 259.448 31 260C31 260.552 30.5523 261 30 261Z" fill="white"/>
+      <path fill-rule="evenodd" clip-rule="evenodd" d="M29.9307 263.877C30.0736 264.411 29.757 264.959 29.2235 265.102C28.7149 265.239 28.2511 265.506 27.8787 265.879C27.5063 266.251 27.2385 266.715 27.1022 267.224C26.9659 267.732 26.9659 268.268 27.1022 268.776C27.2385 269.285 27.5063 269.749 27.8787 270.121C28.2511 270.494 28.7149 270.761 29.2235 270.898C29.7322 271.034 30.2678 271.034 30.7765 270.898C31.2851 270.761 31.749 270.494 32.1213 270.121C32.4937 269.749 32.7615 269.285 32.8978 268.776C33.0407 268.243 33.5891 267.926 34.1225 268.069C34.656 268.212 34.9726 268.761 34.8296 269.294C34.6025 270.142 34.1562 270.915 33.5355 271.536C32.9149 272.156 32.1419 272.602 31.2941 272.83C30.4463 273.057 29.5537 273.057 28.7059 272.83C27.8581 272.602 27.0851 272.156 26.4645 271.536C25.8439 270.915 25.3975 270.142 25.1704 269.294C24.9432 268.446 24.9432 267.554 25.1704 266.706C25.3975 265.858 25.8439 265.085 26.4645 264.464C27.0851 263.844 27.8581 263.398 28.7059 263.17C29.2394 263.027 29.7877 263.344 29.9307 263.877Z" fill="white"/>
+      <path d="M32.5 262.062V264.086L29.2929 267.293C28.9024 267.683 28.9024 268.317 29.2929 268.707C29.6834 269.098 30.3166 269.098 30.7071 268.707L33.9142 265.5H35.9379C36.2429 265.5 36.5354 265.379 36.751 265.163L38.451 263.463C39.1755 262.739 38.6624 261.5 37.6379 261.5H36.5V260.362C36.5 259.338 35.2613 258.824 34.5368 259.549L32.8368 261.249C32.6212 261.465 32.5 261.757 32.5 262.062Z" fill="white"/>
+      <path d="M21.5 323L22 321L24 320.5L22 320L21.5 318L21 320L19 320.5L21 321L21.5 323Z" fill="white"/>
+      <path d="M33 321L33.94 318.93L36 318L33.94 317.07L33 315L32.08 317.07L30 318L32.08 318.93L33 321Z" fill="white"/>
+      <path d="M39 320C37.55 320 36.74 321.44 37.07 322.51L33.52 326.07C33.22 325.98 32.78 325.98 32.48 326.07L29.93 323.52C30.27 322.45 29.46 321 28 321C26.55 321 25.73 322.44 26.07 323.52L21.51 328.07C20.44 327.74 19 328.55 19 330C19 331.1 19.9 332 21 332C22.45 332 23.26 330.56 22.93 329.49L27.48 324.93C27.78 325.02 28.22 325.02 28.52 324.93L31.07 327.48C30.73 328.55 31.54 330 33 330C34.45 330 35.27 328.56 34.93 327.48L38.49 323.93C39.56 324.26 41 323.45 41 322C41 320.9 40.1 320 39 320Z" fill="white"/>
+      <line x1="6" y1="356.5" x2="54" y2="356.5" stroke="black" stroke-opacity="0.05"/>
+      <path d="M25 399C24.45 399 23.9792 398.804 23.5875 398.413C23.1958 398.021 23 397.55 23 397C23 396.45 23.1958 395.979 23.5875 395.587C23.9792 395.196 24.45 395 25 395C25.55 395 26.0208 395.196 26.4125 395.587C26.8042 395.979 27 396.45 27 397C27 397.55 26.8042 398.021 26.4125 398.413C26.0208 398.804 25.55 399 25 399ZM35 399C34.45 399 33.9792 398.804 33.5875 398.413C33.1958 398.021 33 397.55 33 397C33 396.45 33.1958 395.979 33.5875 395.587C33.9792 395.196 34.45 395 35 395C35.55 395 36.0208 395.196 36.4125 395.587C36.8042 395.979 37 396.45 37 397C37 397.55 36.8042 398.021 36.4125 398.413C36.0208 398.804 35.55 399 35 399ZM25 394C24.25 394 23.6833 393.671 23.3 393.012C22.9167 392.354 22.9 391.7 23.25 391.05L24.6 388.6L21 381H19.975C19.6917 381 19.4583 380.904 19.275 380.712C19.0917 380.521 19 380.283 19 380C19 379.717 19.0958 379.479 19.2875 379.287C19.4792 379.096 19.7167 379 20 379H21.625C21.8083 379 21.9833 379.05 22.15 379.15C22.3167 379.25 22.4417 379.392 22.525 379.575L23.2 381H37.95C38.4 381 38.7083 381.167 38.875 381.5C39.0417 381.833 39.0333 382.183 38.85 382.55L35.3 388.95C35.1167 389.283 34.875 389.542 34.575 389.725C34.275 389.908 33.9333 390 33.55 390H26.1L25 392H36.025C36.3083 392 36.5417 392.096 36.725 392.288C36.9083 392.479 37 392.717 37 393C37 393.283 36.9042 393.521 36.7125 393.713C36.5208 393.904 36.2833 394 36 394H25Z" fill="white"/>
+    </svg>
+  </nav>
+  <div class="content">
+    <header class="page-head" id="phead"></header>
+    <main id="main"></main>
+  </div>
+</div>
+<div id="oq"></div>
+</div>
+<div id="modal"></div>
+
+<script>
+(function(){
+"use strict";
+const CAP = 500;
+const NEXT = "tonight at 2 AM";
+const NEXT_DATE = "Thu, Nov 26 at 2 AM";
+const LAST_OK = "Nov 25, 2:00 AM";
+const LAST_MISSED = "Nov 21, 7:41 AM";
+
+const I = {
+  search:'<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 0 0 1.48-5.34c-.47-2.78-2.79-5-5.59-5.34a6.505 6.505 0 0 0-7.27 7.27c.34 2.8 2.56 5.12 5.34 5.59a6.5 6.5 0 0 0 5.34-1.48l.27.28v.79l4.25 4.25c.41.41 1.08.41 1.49 0 .41-.41.41-1.08 0-1.49L15.5 14zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>',
+  close:'<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M18.3 5.71a.996.996 0 0 0-1.41 0L12 10.59 7.11 5.7A.996.996 0 1 0 5.7 7.11L10.59 12 5.7 16.89a.996.996 0 1 0 1.41 1.41L12 13.41l4.89 4.89a.996.996 0 1 0 1.41-1.41L13.41 12l4.89-4.89c.38-.38.38-1.02 0-1.4z"/></svg>',
+  note:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v8.55c-.94-.54-2.1-.75-3.33-.32-1.34.48-2.37 1.67-2.61 3.07a4.007 4.007 0 0 0 4.59 4.65c1.96-.31 3.35-2.11 3.35-4.1V7h2c1.1 0 2-.9 2-2s-.9-2-2-2h-2c-1.1 0-2 .9-2 2z"/></svg>',
+  heart:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13.35 20.13c-.76.69-1.93.69-2.69-.01l-.11-.1C5.3 15.27 1.87 12.16 2 8.28c.06-1.7.93-3.33 2.34-4.29 2.64-1.8 5.9-.96 7.66 1.1 1.76-2.06 5.02-2.91 7.66-1.1 1.41.96 2.28 2.59 2.34 4.29.14 3.88-3.3 6.99-8.55 11.76l-.1.09z"/></svg>',
+  warn:'<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5.99 19.53 19H4.47L12 5.99M2.74 18c-.77 1.33.19 3 1.73 3h15.06c1.54 0 2.5-1.67 1.73-3L13.73 4.99c-.77-1.33-2.69-1.33-3.46 0L2.74 18zM11 11v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zm0 5h2v2h-2z"/></svg>',
+  info:'<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>',
+  clock:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm-.22-13h-.06c-.4 0-.72.32-.72.72v4.72c0 .35.18.68.49.86l4.15 2.49c.34.2.78.1.98-.24a.71.71 0 0 0-.25-.99l-3.87-2.3V7.72c0-.4-.32-.72-.72-.72z"/></svg>',
+  edit:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17.46v3.04c0 .28.22.5.5.5h3.04c.13 0 .26-.05.35-.15L17.81 9.94l-3.75-3.75L3.15 17.1c-.1.1-.15.22-.15.36zM20.71 7.04a.996.996 0 0 0 0-1.41l-2.34-2.34a.996.996 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>',
+  warnf:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.47 21h15.06c1.54 0 2.5-1.67 1.73-3L13.73 4.99c-.77-1.33-2.69-1.33-3.46 0L2.74 18c-.77 1.33.19 3 1.73 3zM12 14c-.55 0-1-.45-1-1v-2c0-.55.45-1 1-1s1 .45 1 1v2c0 .55-.45 1-1 1zm1 4h-2v-2h2v2z"/></svg>',
+  cancel:'<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm4.3 14.3a.996.996 0 0 1-1.41 0L12 13.41 9.11 16.3a.996.996 0 1 1-1.41-1.41L10.59 12 7.7 9.11A.996.996 0 1 1 9.11 7.7L12 10.59l2.89-2.89a.996.996 0 1 1 1.41 1.41L13.41 12l2.89 2.89c.38.38.38 1.02 0 1.41z"/></svg>',
+  copy:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 20H5V7c0-.55-.45-1-1-1s-1 .45-1 1v13c0 1.1.9 2 2 2h10c.55 0 1-.45 1-1s-.45-1-1-1zm5-4V4c0-1.1-.9-2-2-2H9c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h9c1.1 0 2-.9 2-2zm-2 0H9V4h9v12z"/></svg>',
+  back:'<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M16.62 2.99a1.25 1.25 0 0 0-1.77 0L6.54 11.3a.996.996 0 0 0 0 1.41l8.31 8.31c.49.49 1.28.49 1.77 0s.49-1.28 0-1.77L9.38 12l7.25-7.25c.48-.48.48-1.28-.01-1.76z"/></svg>',
+  chev:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.29 6.71a.996.996 0 0 0 0 1.41L13.17 12l-3.88 3.88a.996.996 0 1 0 1.41 1.41l4.59-4.59a.996.996 0 0 0 0-1.41L10.7 6.7c-.38-.38-1.02-.38-1.41.01z"/></svg>',
+  arrow:'<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 19V7.83l4.88 4.88c.39.39 1.03.39 1.42 0a.996.996 0 0 0 0-1.41l-6.59-6.59a.996.996 0 0 0-1.41 0l-6.6 6.58a.996.996 0 1 0 1.41 1.41L11 7.83V19c0 .55.45 1 1 1s1-.45 1-1z"/></svg>'
+};
+const CB = (attrs) => `<span class="cb"><input type="checkbox" ${attrs}><span class="bx"><svg class="ck" viewBox="0 0 24 24"><path d="M9 16.17 5.53 12.7a1 1 0 0 0-1.41 1.41l4.18 4.18c.39.39 1.02.39 1.41 0L20.29 7.71a1 1 0 0 0-1.41-1.41L9 16.17z"/></svg><svg class="dash" viewBox="0 0 24 24"><path d="M18 13H6c-.55 0-1-.45-1-1s.45-1 1-1h12c.55 0 1 .45 1 1s-.45 1-1 1z"/></svg></span></span>`;
+
+let seed = 7;
+function rnd(){ seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }
+
+const FAV_RAW = `Mr. Brightside~The Killers~Alternative
+Don't Stop Believin'~Journey~Classic Rock
+Sweet Caroline~Neil Diamond~Pop
+Friends in Low Places~Garth Brooks~Country
+A Bar Song (Tipsy)~Shaboozey~Country
+Livin' on a Prayer~Bon Jovi~Rock
+Wagon Wheel~Darius Rucker~Country
+Take Me Home, Country Roads~John Denver~Country
+Last Night~Morgan Wallen~Country
+Uptown Funk~Mark Ronson ft. Bruno Mars~Pop
+September~Earth, Wind & Fire~R&B
+Espresso~Sabrina Carpenter~Pop
+Seven Nation Army~The White Stripes~Alternative
+Tennessee Whiskey~Chris Stapleton~Country
+Africa~Toto~Classic Rock
+Bohemian Rhapsody~Queen~Classic Rock
+I Wanna Dance with Somebody~Whitney Houston~Pop
+Before He Cheats~Carrie Underwood~Country
+Hey Ya!~OutKast~Hip-Hop
+Sweet Home Alabama~Lynyrd Skynyrd~Classic Rock
+Dancing Queen~ABBA~Pop
+I Had Some Help~Post Malone ft. Morgan Wallen~Country
+You Shook Me All Night Long~AC/DC~Rock
+Brown Eyed Girl~Van Morrison~Classic Rock
+Shut Up and Dance~Walk the Moon~Pop
+Billie Jean~Michael Jackson~Pop
+Fast Car~Luke Combs~Country
+Wonderwall~Oasis~Alternative
+Jolene~Dolly Parton~Country
+Free Bird~Lynyrd Skynyrd~Classic Rock
+Pink Pony Club~Chappell Roan~Pop
+Dreams~Fleetwood Mac~Classic Rock
+Hotel California~Eagles~Classic Rock
+Smells Like Teen Spirit~Nirvana~Alternative
+Margaritaville~Jimmy Buffett~Country
+Shallow~Lady Gaga & Bradley Cooper~Pop
+Pour Some Sugar on Me~Def Leppard~Rock
+All Summer Long~Kid Rock~Rock
+Man! I Feel Like a Woman!~Shania Twain~Country
+Ring of Fire~Johnny Cash~Country
+Thunderstruck~AC/DC~Rock
+Die With a Smile~Lady Gaga & Bruno Mars~Pop
+Mamma Mia~ABBA~Pop
+Feel Good Inc.~Gorillaz~Alternative
+In Da Club~50 Cent~Hip-Hop~E
+Crazy in Love~Beyoncé ft. Jay-Z~R&B
+Get Lucky~Daft Punk ft. Pharrell Williams~Dance
+Levitating~Dua Lipa~Pop
+Blinding Lights~The Weeknd~Pop
+Flowers~Miley Cyrus~Pop
+Cruel Summer~Taylor Swift~Pop
+Shake It Off~Taylor Swift~Pop
+Texas Hold 'Em~Beyoncé~Country
+Whiskey Glasses~Morgan Wallen~Country
+Chicken Fried~Zac Brown Band~Country
+Beer Never Broke My Heart~Luke Combs~Country
+Austin~Dasha~Country
+Gunpowder & Lead~Miranda Lambert~Country
+Folsom Prison Blues~Johnny Cash~Country~L
+Come Together~The Beatles~Classic Rock
+Hey Jude~The Beatles~Classic Rock
+Piano Man~Billy Joel~Classic Rock
+American Pie~Don McLean~Classic Rock
+Tiny Dancer~Elton John~Classic Rock
+Should I Stay or Should I Go~The Clash~Rock
+Enter Sandman~Metallica~Rock
+Back in Black~AC/DC~Rock
+Lose Control~Teddy Swims~Pop
+Under the Bridge~Red Hot Chili Peppers~Alternative
+Basket Case~Green Day~Alternative
+Song 2~Blur~Alternative
+The Middle~Jimmy Eat World~Alternative
+Mo Money Mo Problems~The Notorious B.I.G.~Hip-Hop~E
+Lose Yourself~Eminem~Hip-Hop~E
+HUMBLE.~Kendrick Lamar~Hip-Hop~Ed
+Gin and Juice~Snoop Dogg~Hip-Hop~Ed
+Yeah!~Usher ft. Lil Jon & Ludacris~R&B
+No Scrubs~TLC~R&B
+Too Sweet~Hozier~Alternative
+Waterfalls~TLC~R&B
+Superstition~Stevie Wonder~R&B
+Respect~Aretha Franklin~R&B
+Let's Stay Together~Al Green~R&B
+I Gotta Feeling~The Black Eyed Peas~Dance
+Titanium~David Guetta ft. Sia~Dance
+Don't Start Now~Dua Lipa~Dance
+Despacito~Luis Fonsi ft. Daddy Yankee~Latin
+La Bamba~Ritchie Valens~Latin
+Suavemente~Elvis Crespo~Latin
+Callaita~Bad Bunny~Latin
+Ain't No Mountain High Enough~Marvin Gaye & Tammi Terrell~R&B
+Stand by Me~Ben E. King~R&B
+Beautiful Things~Benson Boone~Pop
+Jessie's Girl~Rick Springfield~Rock
+Good Luck, Babe!~Chappell Roan~Pop
+Birds of a Feather~Billie Eilish~Pop
+Take On Me~a-ha~Pop
+Livin' la Vida Loca~Ricky Martin~Latin
+Gimme All Your Lovin'~ZZ Top~Rock
+Fishin' in the Dark~Nitty Gritty Dirt Band~Country`;
+
+const CAT_RAW = `Bad Moon Rising~Creedence Clearwater Revival~Classic Rock
+Fortunate Son~Creedence Clearwater Revival~Classic Rock
+Gimme Shelter~The Rolling Stones~Classic Rock
+Paint It Black~The Rolling Stones~Classic Rock
+Black Dog~Led Zeppelin~Classic Rock
+Kashmir~Led Zeppelin~Classic Rock
+Born to Run~Bruce Springsteen~Rock
+Dancing in the Dark~Bruce Springsteen~Rock
+Glory Days~Bruce Springsteen~Rock
+Hurt~Johnny Cash~Country
+Man in Black~Johnny Cash~Country
+9 to 5~Dolly Parton~Country
+Coat of Many Colors~Dolly Parton~Country
+Chattahoochee~Alan Jackson~Country
+Boot Scootin' Boogie~Brooks & Dunn~Country
+Love Story~Taylor Swift~Pop
+Anti-Hero~Taylor Swift~Pop
+Fortnight~Taylor Swift ft. Post Malone~Pop
+Karma~Taylor Swift~Pop
+Starboy~The Weeknd~Pop~E
+Save Your Tears~The Weeknd~Pop
+Houdini~Dua Lipa~Dance
+Juicy~The Notorious B.I.G.~Hip-Hop~E
+Still D.R.E.~Dr. Dre ft. Snoop Dogg~Hip-Hop~Ed
+Not Like Us~Kendrick Lamar~Hip-Hop~E
+Hips Don't Lie~Shakira~Latin
+Waka Waka~Shakira~Latin
+Valerie~Amy Winehouse~R&B
+Rehab~Amy Winehouse~R&B
+Creep~Radiohead~Alternative~E
+Zombie~The Cranberries~Alternative
+Losing My Religion~R.E.M.~Alternative
+Everlong~Foo Fighters~Alternative
+Learn to Fly~Foo Fighters~Alternative
+The Pretender~Foo Fighters~Alternative
+Times Like These~Foo Fighters~Alternative~L
+Wildflower~Billie Eilish~Pop
+Lovin On Me~Jack Harlow~Hip-Hop~E
+Watermelon Sugar~Harry Styles~Pop
+Sweet Child O' Mine~Guns N' Roses~Classic Rock
+In the Air Tonight~Phil Collins~Pop`;
+
+const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const TODAY_TS = Date.UTC(2026,10,25), DAY = 864e5;
+const fmt = ts => { const d = new Date(ts); return MONTHS[d.getUTCMonth()]+" "+d.getUTCDate()+", "+d.getUTCFullYear(); };
+const parse = (raw,p) => raw.trim().split("\n").map((l,i)=>{ const [title,artist,style,tags]=l.split("~"); return {id:p+i,title,artist,style,tags:tags||""}; });
+const CATALOG = parse(CAT_RAW,"c");
+CATALOG.forEach(c => { c.netPlays = Math.round(20 + rnd()*900); });
+/* ---------- TouchTunes playlists (categories + playlists from the current Tempo wizard screenshots) ---------- */
+const PL_EXTRA = `Dream On~Aerosmith~Rock
+Walk This Way~Aerosmith~Rock
+I Don't Want to Miss a Thing~Aerosmith~Rock
+DtMF~Bad Bunny~Latin~~578
+Tití Me Preguntó~Bad Bunny~Latin~E~512
+NUEVAYoL~Bad Bunny~Latin~~484
+EoO~Bad Bunny~Latin~~377
+BAILE INoLVIDABLE~Bad Bunny~Latin~~287
+I Like It (with Bad Bunny & J Balvin)~Cardi B~Hip-Hop~~160
+un x100to (with Bad Bunny)~Grupo Frontera~Latin~~158
+MONACO~Bad Bunny~Latin~E~154
+Touch of Grey~Grateful Dead~Classic Rock
+Casey Jones~Grateful Dead~Classic Rock
+Purple Rain~Prince~R&B
+Kiss~Prince~R&B
+1999~Prince~R&B
+Crazy Train~Ozzy Osbourne~Rock
+Mr. Crowley~Ozzy Osbourne~Rock
+Free Fallin'~Tom Petty~Rock
+American Girl~Tom Petty~Rock
+I Won't Back Down~Tom Petty~Rock
+Propuesta Indecente~Romeo Santos~Latin
+Eres Mía~Romeo Santos~Latin
+Smooth Criminal~Michael Jackson~Pop
+Beat It~Michael Jackson~Pop
+Cracklin' Rosie~Neil Diamond~Pop
+Don't Look Back in Anger~Oasis~Alternative
+Whole Lotta Love~Led Zeppelin~Classic Rock
+Let It Be~The Beatles~Classic Rock
+(I Can't Get No) Satisfaction~The Rolling Stones~Classic Rock`;
+const PL_POOL = (() => {
+  const favs = parse(FAV_RAW,"pf").map((s,i)=>Object.assign(s,{pop:Math.max(20, 620 - i*6)}));
+  const cat = CATALOG.map(c=>Object.assign({},c,{pop:c.netPlays}));
+  const extra = PL_EXTRA.trim().split("\n").map((l,i)=>{ const [title,artist,style,tags,pop]=l.split("~"); return {id:"px"+i,title,artist,style,tags:tags||"",pop:pop?+pop:Math.round(60+rnd()*400)}; });
+  const seen = new Set(), out = [];
+  for (const s of extra.concat(cat, favs)){ const k=s.title+"|"+s.artist; if (!seen.has(k)){ seen.add(k); out.push(s); } }
+  return out;
+})();
+const PL_CATS = ["Artist Curated","Decades","Essentials","Genres","Latin","New & Popular","Themes"];
+const byPop = a => a.slice().sort((x,y)=>y.pop-x.pop);
+const styleIs = (...st) => PL_POOL.filter(s=>st.includes(s.style));
+const PLAYLISTS = [
+  ...["Aerosmith","Bad Bunny","Dolly Parton","Grateful Dead","Kendrick Lamar","Led Zeppelin","Michael Jackson","Neil Diamond","Oasis","Ozzy Osbourne","Prince","Romeo Santos","The Beatles","The Rolling Stones","Tom Petty"]
+    .map(a=>({cat:"Essentials", name:"Essentials: "+a, songs:()=>byPop(PL_POOL.filter(s=>(s.artist+" "+s.title).toLowerCase().includes(a.toLowerCase())))})),
+  {cat:"Artist Curated", name:"Shaboozey's Bar Picks", songs:()=>byPop(styleIs("Country")).slice(0,15)},
+  {cat:"Artist Curated", name:"Chappell Roan: Pop Night", songs:()=>byPop(styleIs("Pop")).slice(0,15)},
+  {cat:"Decades", name:"70s Classics", songs:()=>byPop(styleIs("Classic Rock")).slice(0,15)},
+  {cat:"Decades", name:"90s Alternative", songs:()=>byPop(styleIs("Alternative")).slice(0,15)},
+  {cat:"Decades", name:"2000s Party", songs:()=>byPop(styleIs("Hip-Hop","Dance")).slice(0,15)},
+  {cat:"Genres", name:"Country Hits", songs:()=>byPop(styleIs("Country")).slice(0,20)},
+  {cat:"Genres", name:"Rock Anthems", songs:()=>byPop(styleIs("Rock","Classic Rock")).slice(0,20)},
+  {cat:"Genres", name:"R&B Grooves", songs:()=>byPop(styleIs("R&B")).slice(0,15)},
+  {cat:"Latin", name:"Latin Hits", songs:()=>byPop(styleIs("Latin")).slice(0,20)},
+  {cat:"Latin", name:"Reggaetón Now", songs:()=>byPop(styleIs("Latin")).slice(0,10)},
+  {cat:"New & Popular", name:"Hot This Week", songs:()=>byPop(PL_POOL).slice(0,20)},
+  {cat:"New & Popular", name:"New Releases", songs:()=>byPop(PL_POOL.filter(s=>s.id.startsWith("c")||s.id.startsWith("px"))).slice(0,15)},
+  {cat:"Themes", name:"Game Day", songs:()=>byPop(styleIs("Rock","Hip-Hop")).slice(0,15)},
+  {cat:"Themes", name:"Happy Hour", songs:()=>byPop(styleIs("Pop","Dance","R&B")).slice(0,15)},
+  {cat:"Themes", name:"Karaoke Night", songs:()=>byPop(styleIs("Pop","Classic Rock")).slice(5,25)}
+].map((p,i)=>Object.assign(p,{id:"pl"+i}));
+function inFavs(so){ return S.favs.some(f=>f.title===so.title && f.artist===so.artist && !isRem(f)); }
+function ensureCat(so){
+  let c = CATALOG.find(x=>x.title===so.title && x.artist===so.artist);
+  if (!c){ c = {id:"cp"+CATALOG.length, title:so.title, artist:so.artist, style:so.style, tags:so.tags, netPlays:so.pop}; CATALOG.push(c); }
+  return c.id;
+}
+function addFromPlaylist(songs, name){
+  const added = [];
+  for (const so of songs){ const f = addSong(ensureCat(so), true); if (f) added.push(f); }
+  S.modal = null; render();
+  toast(S.model==="draft" ? `${plural(added.length,"song")} from ${name} added to your changes.` : `Added ${plural(added.length,"song")} from ${name}. Updates on the jukebox ${NEXT}.`,
+    () => { for (const f of added){ const i=S.favs.indexOf(f); if (i>=0) S.favs.splice(i,1); } });
+}
+
+
+const LOCATIONS = [
+  {id:"L26011", name:"BullShooter New York", jukes:2, size:500},
+  {id:"L14102", name:"Whimsical Brews", jukes:1, size:486},
+  {id:"L37380", name:"Craft Brewers Conference Angelina", jukes:1, size:488},
+  {id:"L11264", name:"Craft Brewers Conference Fusion", jukes:1, size:500},
+  {id:"L30315", name:"Dockside Tavern", jukes:1, size:560},
+  {id:"L15371", name:"Lighthouse Network NC", jukes:3, size:231},
+  {id:"L17215", name:"Playdium", jukes:4, size:278},
+  {id:"L30308", name:"The Rusty Nail", jukes:2, size:402},
+  {id:"L15373", name:"Hops & Barley", jukes:1, size:131},
+  {id:"L11241", name:"Default location", jukes:0, size:0, wh:true}
+];
+function buildFavs(li){
+  seed = 11 + li*13;
+  const base = parse(FAV_RAW,"f"+li+"_");
+  const rot = (li*17) % base.length;
+  return base.slice(rot).concat(base.slice(0,rot)).map((s,i)=>{
+    const plays = Math.max(0, Math.round(150*Math.exp(-i/26) + rnd()*8 - 3));
+    const lastDays = plays===0 ? null : Math.floor(rnd()*(plays>25?3:plays>6?14:45));
+    const added = TODAY_TS - Math.round(30 + rnd()*500)*DAY;
+    return Object.assign(s,{plays,last:lastDays===null?null:TODAY_TS-lastDays*DAY,added,avail:s.title!=="Callaita",st:null});
+  });
+}
+const PER_LOC = ["favs","hidden","q","filter","sort","shown","selected","catSel"];
+function initLoc(id){
+  const li = LOCATIONS.findIndex(l=>l.id===id), L = LOCATIONS[li];
+  // Other locations get a different mix (about a third of the demo songs left out), so copying between locations has something to copy.
+  const favs = buildFavs(li).filter((f,i)=> li===0 || (i*7+li)%3!==0).slice(0, Math.min(100, L.size));
+  return {favs, hidden:L.size-favs.length, q:"", filter:"all", sort:{key:"plays",dir:"desc"}, shown:25, selected:new Set(), catSel:new Set()};
+}
+function switchLoc(id){
+  if (id===S.loc) return;
+  const keep={}; PER_LOC.forEach(k=>keep[k]=S[k]); S.ls[S.loc]=keep;
+  S.loc=id; Object.assign(S, S.ls[id] || initLoc(id)); S.modal=null;
+}
+const curLoc = () => LOCATIONS.find(l=>l.id===S.loc);
+function locState(id){ return id===S.loc ? S : S.ls[id]; }
+function countFor(id){ const st=locState(id); if (!st) return LOCATIONS.find(l=>l.id===id).size; return st.hidden + st.favs.filter(f=>f.st!=="dRem"&&f.st!=="pRem").length; }
+function otherLocs(){ return LOCATIONS.filter(l=>l.id!==S.loc && !l.wh).map(l=>({id:l.id,name:l.name,code:l.id,used:countFor(l.id)})); }
+
+let S;
+/* ---------- Maze test mode (?test, optional &start=pending) ----------
+   Hides the prototype bar and notes, and writes a #done-… marker into the URL when a test task's end state is reached,
+   so Maze can use that URL as the mission's success screen. */
+const QS = new URLSearchParams(location.search), TEST = QS.has("test"), TEST_START = QS.get("start");
+const L_WHIMSICAL = "L14102", L_PLAYDIUM = "L17215";
+function testMarkers(){
+  const here = t => S.favs.find(f=>f.title===t);
+  const pAddsAt = lid => { const st=locState(lid); return st ? st.favs.filter(f=>f.st==="pAdd") : []; };
+  const out = [];
+  if (S.q && S.q.trim().length>=3 && rows().some(f=>f.title==="Tennessee Whiskey")) out.push("done-find");
+  const ww = here("Wagon Wheel"); if (ww && ww.st==="pRem" && !ww.remo) out.push("done-remove-here");
+  const mb = here("Mr. Brightside"); if (mb && mb.st==="pRem" && mb.remo && mb.remo.refs.some(r=>r.loc===L_PLAYDIUM)) out.push("done-remove-multi");
+  if (pAddsAt(L_WHIMSICAL).some(f=>f.title==="Bad Moon Rising")) out.push("done-add-other");
+  const ch = new Set(PLAYLISTS.find(p=>p.name==="Country Hits").songs().map(so=>so.title+"|"+so.artist));
+  if (pAddsAt(L_WHIMSICAL).filter(f=>ch.has(f.title+"|"+f.artist)).length>=3) out.push("done-add-playlist");
+  if (TEST_START==="pending" && !pendingByLoc().length) out.push("done-cancel-all");
+  return out;
+}
+let testPrev = [];
+function testSync(){
+  if (!TEST) return;
+  const cur = location.hash.slice(1), list = testMarkers(), fresh = list.filter(m=>!testPrev.includes(m));
+  testPrev = list;
+  // The task finished most recently wins; undoing it falls back to one that is still done, or clears the marker.
+  const want = fresh.length ? fresh[fresh.length-1] : list.includes(cur) ? cur : list[list.length-1];
+  if (want && want!==cur) location.hash = want;
+  else if (!want && cur) history.replaceState(null, "", location.pathname+location.search);
+}
+/* start=pending: changes already waiting for 2 AM at several locations (for the Cancel pending changes mission) */
+function seedPending(){
+  const t0 = toast; toast = () => {};
+  const id = t => S.favs.find(f=>f.title===t).id;
+  removeMore([id("Sweet Caroline")], [L_WHIMSICAL, "L30315"], true);
+  removeMore([id("Espresso")], ["L15373"], false);
+  addMore([CATALOG.find(c=>c.title==="Fortunate Son").id], [L_WHIMSICAL, L_PLAYDIUM], false);
+  toast = t0;
+}
+function fresh(k){
+  k = k || {};
+  const loc = k.loc || LOCATIONS[0].id;
+  S = Object.assign({
+    model: "instant", /* Apply right away only (25 Nov 2026); Review and send code kept but unreachable */ missed: !!k.missed,
+    notes: k.notes!==undefined ? k.notes : false,
+    loc, ls:{}, lq:"", modal:null
+  }, initLoc(loc));
+  if (S.missed) seedMissed();
+}
+function hashModel(){ const h = location.hash.slice(1); return h==="draft"||h==="instant" ? h : null; }
+function seedMissed(){
+  if (!S.favs.some(f=>f.st==="pAdd"||f.st==="pRem")){
+    const c = CATALOG.find(x=>x.title==="Watermelon Sugar");
+    S.favs.push(mk(c,"pAdd"));
+    const r = S.favs.find(f=>f.title==="Fishin' in the Dark"); if (r){ r.st="pRem"; r.chg=++chSeq; }
+  }
+}
+let uid=0, chSeq=0;
+function mk(c, st){ return {chg:++chSeq, id:"n"+(uid++), title:c.title, artist:c.artist, style:c.style, tags:c.tags, plays:0, last:null, added:TODAY_TS, avail:true, st, from:c.id}; }
+
+const isRem = f => f.st==="dRem" || f.st==="pRem";
+const count = () => S.hidden + S.favs.filter(f=>!isRem(f)).length;
+const free = () => CAP - count();
+const drafts = () => S.favs.filter(f=>f.st==="dAdd"||f.st==="dRem");
+const pendings = () => S.favs.filter(f=>f.st==="pAdd"||f.st==="pRem");
+const n = (arr, st) => arr.filter(f=>f.st===st).length;
+
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const plural = (k, one, many) => k+" "+(k===1?one:(many||one+"s"));
+const note = (kind, t) => `<div class="note"><b>${kind==="q"?"Open question":kind==="v"?"Option":"Assumption"}</b>${t}</div>`;
+const tagHTML = f => f.tags==="E"?`<span class="tag">Explicit</span>`:f.tags==="Ed"?`<span class="tag">Edited</span>`:f.tags==="L"?`<span class="tag">Live</span>`:"";
+
+let toastTimer;
+function toast(msg, undo){
+  let t = document.querySelector(".toast");
+  if (!t){ t=document.createElement("div"); t.className="toast"; t.setAttribute("role","status"); document.body.appendChild(t); }
+  t.innerHTML = `<span>${esc(msg)}</span>${undo?`<button type="button">Undo</button>`:""}`;
+  if (undo) t.querySelector("button").onclick = () => { undo(); t.classList.remove("show"); render(); };
+  requestAnimationFrame(()=>t.classList.add("show"));
+  clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove("show"), undo?6000:4000);
+}
+
+/* ---------- actions ---------- */
+function addSong(cid, quiet){
+  if (free()<=0) return null;
+  const c = CATALOG.find(x=>x.id===cid);
+  const f = mk(c, S.model==="draft" ? "dAdd" : "pAdd");
+  S.favs.push(f); S.catSel.delete(cid);
+  if (S.model==="instant" && !quiet) toast(`Added ${c.title}. Updates on the jukebox ${NEXT}.`, () => { S.favs.splice(S.favs.indexOf(f),1); });
+  return f;
+}
+function addSelected(ids){
+  const added = ids.map(id=>addSong(id,true)).filter(Boolean);
+  S.catSel.clear();
+  if (S.model==="instant" && added.length) toast(`Added ${plural(added.length,"song")}. Updates on the jukebox ${NEXT}.`, () => { for (const f of added) S.favs.splice(S.favs.indexOf(f),1); });
+}
+/* Add to more locations: catalog songs become pending adds at each chosen location that doesn't have them and has room.
+   A row added here gets an "Adding at N other locations" status until the 2 AM update. */
+function addMore(cids, locIds, here){
+  const before = S.favs.slice();
+  const added = [], noRoom = [];
+  if (here) for (const id of cids){ const f = addSong(id,true); if (f) added.push(f); else noRoom.push(CATALOG.find(c=>c.id===id).title); }
+  const refs = {}; let skipped = 0;
+  for (const lid of locIds){
+    const st = S.ls[lid] || (S.ls[lid] = initLoc(lid));
+    for (const cid of cids){
+      const c = CATALOG.find(x=>x.id===cid);
+      if (locHasSong(lid, c) || CAP - countFor(lid) <= 0){ skipped++; continue; }
+      const t = mk(c, "pAdd"); st.favs.push(t);
+      (refs[cid] = refs[cid] || []).push({loc:lid, fid:t.id});
+    }
+  }
+  for (const f of added){ if (refs[f.from]) f.addo = {refs:refs[f.from]}; }
+  S.catSel.clear();
+  render();
+  // Say exactly what happens: songs added here, songs added elsewhere, and what didn't fit.
+  const otherN = Object.values(refs).reduce((a,r)=>a+r.length,0), otherLocs = new Set(Object.values(refs).flat().map(r=>r.loc)).size;
+  const parts = [];
+  if (added.length) parts.push(`${plural(added.length,"song")} ${otherN?"here":""}`.trim());
+  if (otherN) parts.push(`${plural(otherN,"add")} at ${plural(otherLocs,"other location")}`);
+  const names = a => a.length<=2 ? a.map(t=>`“${t}”`).join(" and ") : `“${a[0]}”, “${a[1]}” and ${a.length-2} more`;
+  const msg = parts.length ? `Adding ${parts.join(" and ")} to Favorites ${NEXT}.` : `Nothing was added.`;
+  const miss = (noRoom.length ? ` No room here for ${names(noRoom)}.` : "") + (skipped ? ` ${plural(skipped,"add")} skipped at other locations (already there or no room).` : "");
+  toast(msg + miss, () => {
+    S.favs.splice(0, S.favs.length, ...before);
+    for (const cid in refs) for (const r of refs[cid]){ const st=S.ls[r.loc]; const i=st.favs.findIndex(x=>x.id===r.fid); if (i>=0) st.favs.splice(i,1); }
+  });
+}
+function unaddo(id){
+  const f = S.favs.find(x=>x.id===id); if (!f || !f.addo) return;
+  for (const r of f.addo.refs){ const st=S.ls[r.loc]; if (!st) continue; const i=st.favs.findIndex(x=>x.id===r.fid && x.st==="pAdd"); if (i>=0) st.favs.splice(i,1); }
+  delete f.addo;
+}
+function addoChip(f){
+  if (!f.addo || f.st) return ""; /* merged into stChip */
+  const locs = [...new Set(f.addo.refs.map(r=>r.loc))].map(id=>LOCATIONS.find(l=>l.id===id).name);
+  return `<span class="chip p-add" title="Adding at ${esc(locs.join(", "))}">${I.clock}Adding at ${locs.length} other location${locs.length===1?"":"s"} at 2 AM</span>`;
+}
+/* Cancel pending changes, across locations: every location with changes waiting for the 2 AM update. */
+function pendingByLoc(){
+  return LOCATIONS.map(l=>{ const st=locState(l.id); const p = st ? st.favs.filter(f=>f.st==="pAdd"||f.st==="pRem") : [];
+    return {l, adds:p.filter(f=>f.st==="pAdd").length, rems:p.filter(f=>f.st==="pRem").length}; }).filter(x=>x.adds+x.rems>0);
+}
+function cancelPending(locIds){
+  // snapshot every location's rows for Undo
+  const snap = LOCATIONS.map(l=>{ const st=locState(l.id); return st ? {st, favs:st.favs.slice(), rows:st.favs.map(f=>[f,f.st,f.copy,f.remo,f.addo])} : null; }).filter(Boolean);
+  let n = 0;
+  for (const id of locIds){ const st=locState(id); if (!st) continue;
+    for (let i=st.favs.length-1;i>=0;i--){ const f=st.favs[i];
+      if (f.st==="pAdd"){ st.favs.splice(i,1); n++; } else if (f.st==="pRem"){ f.st=null; n++; } }
+  }
+  // drop "at other locations" links that point at cancelled changes
+  for (const l of LOCATIONS){ const st=locState(l.id); if (!st) continue;
+    for (const f of st.favs) for (const k of ["copy","remo","addo"]) if (f[k]){
+      f[k].refs = f[k].refs.filter(r=>{ const t=locState(r.loc); return t && t.favs.some(x=>x.id===r.fid && (x.st==="pAdd"||x.st==="pRem")); });
+      if (!f[k].refs.length) delete f[k];
+    }
+  }
+  S.selected.clear(); render();
+  toast(`Cancelled ${plural(n,"pending change")} at ${plural(locIds.length,"location")}.`, () => {
+    for (const x of snap){ x.st.favs.splice(0, x.st.favs.length, ...x.favs); for (const [f,st,c,r,a] of x.rows){ f.st=st; c?f.copy=c:delete f.copy; r?f.remo=r:delete f.remo; a?f.addo=a:delete f.addo; } }
+  });
+}
+function removeSongs(ids){
+  const done=[];
+  for (const id of ids){
+    const f = S.favs.find(x=>x.id===id); if (!f || isRem(f)) continue;
+    const prev = f.st;
+    if (f.st==="dAdd" || f.st==="pAdd"){ S.favs.splice(S.favs.indexOf(f),1); done.push({f,prev,cancel:true}); }
+    else { f.st = S.model==="draft" ? "dRem" : "pRem"; f.chg=++chSeq; done.push({f,prev}); }
+  }
+  S.selected.clear();
+  if (S.model==="instant" && done.length){
+    const r = done.filter(d=>!d.cancel).length, c = done.length-r;
+    toast([r?`${plural(r,"song")} will be removed from Favorites ${NEXT}`:"", c?`${plural(c,"add")} cancelled`:""].filter(Boolean).join(" · ")+".", () => {
+      for (const d of done){ if (d.cancel) S.favs.push(Object.assign(d.f,{st:d.prev})); else d.f.st = d.prev; }
+    });
+  }
+}
+function undoOne(id){
+  const f = S.favs.find(x=>x.id===id); if (!f) return;
+  if (f.st==="dAdd"||f.st==="pAdd"){ S.favs.splice(S.favs.indexOf(f),1); if (f.st==="pAdd") toast(`Cancelled. ${f.title} won't be added.`); return; }
+  if (free()<=0){ toast("No room to keep this song. Undo an add first."); return; }
+  const was = f.st; f.st=null; if (was==="pRem") toast(`Cancelled. ${f.title} stays in Favorites.`);
+}
+function undoDrafts(){
+  for (const f of drafts().slice()){ if (f.st==="dAdd") S.favs.splice(S.favs.indexOf(f),1); else f.st=null; }
+}
+function send(locs){
+  const a=n(drafts(),"dAdd"), r=n(drafts(),"dRem");
+  for (const f of drafts()) f.st = f.st==="dAdd" ? "pAdd" : "pRem";
+  S.modal=null; render();
+  toast(`Sent: ${[a?plural(a,"song")+" to add to Favorites":"", r?plural(r,"song")+" to remove from Favorites":""].filter(Boolean).join(", ")}${locs?` to ${plural(locs+1,"location")}`:""}. Updates ${NEXT}.`);
+}
+function callin(){
+  let a=0, r=0;
+  const apply = st => { st.favs.forEach(f=>{ delete f.copy; delete f.remo; delete f.addo; }); a+=st.favs.filter(f=>f.st==="pAdd").length; r+=st.favs.filter(f=>f.st==="pRem").length; st.favs = st.favs.filter(f=>f.st!=="pRem"); st.favs.forEach(f=>{ if(f.st==="pAdd") f.st=null; }); };
+  apply(S); Object.values(S.ls).forEach(apply);
+  S.missed=false; S.selected.clear(); if (S.filter==="changes" && !drafts().length) S.filter="all";
+  render(); toast(a||r ? `Jukeboxes updated at 2 AM: ${a} added to Favorites, ${r} removed from Favorites.` : "Jukeboxes called in at 2 AM. Nothing was waiting.");
+}
+
+/* ---------- views ---------- */
+function protoBar(){
+  if (TEST) return "";
+  const seg=(k,v,o)=>`<div class="seg" role="group" aria-label="${k}">${o.map(([x,l])=>`<button data-act="set" data-k="${k}" data-v="${x}" aria-pressed="${v===x}">${l}</button>`).join("")}</div>`;
+  return `<header class="proto"><h1>Favorites redesign <span>· prototype</span></h1>
+    <span class="pspacer"></span>
+    <button class="pbtn" data-act="reset">Reset</button></header>`;
+}
+
+function cardHead(){
+  const c=count(), fr=CAP-c, addN = S.favs.filter(f=>f.st==="dAdd"||f.st==="pAdd").length;
+  const over = c>CAP;
+  const w1 = Math.min(c-addN,CAP)/CAP*100, w2 = over?0:addN/CAP*100;
+  const capTxt = over ? `${c-CAP} over the limit` : fr===0 ? "Favorites is full" : `${plural(fr,"song")} until full`;
+  return `<div class="card-head">
+    <h2 class="h3">Favorites</h2>
+    <div class="ch-actions"><div class="search">${I.search}<input id="q" data-input="q" type="search" autocomplete="off" aria-label="Search your Favorites" placeholder="Search your Favorites" value="${esc(S.q)}">
+      ${S.q?`<button class="clear" data-act="clearq" aria-label="Clear search">${I.close}</button>`:""}</div></div>
+  </div>
+  <div class="noterow">${note("a","The count includes songs being added, so the 500 limit can't be passed by changes waiting for 2 AM. Today's footer ignores pending adds.")}${note("q","With a 500 cap and a 300-song 1CR limit, 200 favorites are no longer 1-credit songs. Is that intended?")}${note("a","Favorites belongs to the location and applies to every jukebox there. The panel on the left switches location; unsent changes stay with each location.")}</div>`;
+}
+
+function overAlert(){
+  const c=count(); if (c<=CAP) return "";
+  const need=c-CAP;
+  return `<div class="alert warn" role="status">${I.warn}<div class="a-msg"><b>Your Favorites has ${c} songs. The limit is now ${CAP}.</b> Remove ${plural(need,"song")} from Favorites before you can add new ones.</div>
+    <div class="a-act"><button class="btn sm text" data-act="leastplayed" style="color:inherit">Show least played</button><button class="btn sm" data-act="selleast" data-v="${need}" style="color:inherit;border-color:currentColor">Select ${need} least played</button></div></div>
+    <div class="noterow">${note("q","Moving from 2,000 to 500: is there a deadline, an automatic trim, or can existing operators keep their limit?")}</div>`;
+}
+
+function toolbar(){
+  const ch = drafts().length + pendings().length;
+  return `<div class="toolbar">
+    ${S.filter==="changes"?`<span class="fchip">Changes only<button data-act="filter" data-v="all" aria-label="Show all songs">${I.cancel}</button></span>`:""}
+    <span class="split-btn"><button class="btn solid sb-main" data-act="addsongs">Add songs</button><button class="btn solid sb-arrow" data-act="actsmenu" aria-label="More actions" aria-haspopup="menu" aria-expanded="${!!S.actsOpen}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.71 11.71l2.59 2.59c.39.39 1.02.39 1.41 0l2.59-2.59c.63-.63.18-1.71-.71-1.71H9.41c-.89 0-1.33 1.08-.7 1.71z"/></svg></button>${S.actsOpen?`<div class="sb-menu" role="menu"><button role="menuitem" data-act="copy" ${S.selected.size?"":"disabled"}>Add selected songs to other locations</button></div>`:""}</span>
+    <button class="btn" data-act="removesel" ${S.selected.size?"":"disabled"}>Remove from Favorites</button>
+    ${pendingByLoc().length?`<button class="btn" data-act="cancelpending">Cancel pending changes</button>`:""}
+    <span class="results num">${S.selected.size ? `<b>${S.selected.size}</b> of ${count()} selected` : `<b>${count()}</b> of ${CAP} songs`}</span>${drafts().length&&!S.selected.size?`<span class="tb-actions"><button class="btn text" data-act="undodrafts">Undo all</button><button class="btn solid" data-act="review" ${count()>CAP?"disabled":""}>Review and send ${drafts().length}</button></span>`:""}
+  </div>
+  <div class="noterow">${note("v","The search box only filters your Favorites. Add songs (in the arrow menu) searches the catalog, then asks which locations. Try “Taylor”, “Foo” or “Cash”.")}${note("a","Top Plays is gone as a way to add songs (Vishal: why make popular songs cheaper?). Plays stay as a column to help decide what to remove. Quick Manage is removed.")}</div>`;
+}
+
+function selBar(){
+  if (!S.selected.size) return "";
+  return `<div class="selbar" role="region" aria-label="Selection"><b class="num">${plural(S.selected.size,"song")} selected</b>
+    <button class="btn sm text" data-act="clearsel">Clear</button>
+    <button class="btn sm" data-act="copy">Add to other locations</button>
+    <button class="btn sm danger" data-act="removesel">Remove</button></div>`;
+}
+
+function rows(){
+  let r = S.favs.slice();
+  const q = S.q.trim().toLowerCase();
+  if (q) r = r.filter(f=>(f.title+" "+f.artist+" "+f.style).toLowerCase().includes(q));
+  if (S.filter==="changes") r = r.filter(f=>f.st);
+  const k=S.sort.key, d=S.sort.dir==="asc"?1:-1;
+  r.sort((a,b)=>{ if(k==="title"||k==="artist") return a[k].localeCompare(b[k])*d; let x=a[k],y=b[k]; if(x===null)x=-1; if(y===null)y=-1; return (x-y)*d || a.title.localeCompare(b.title); });
+  // Review area: every song with a change (add or remove, unsent or pending) is pinned at the top, newest change first, whatever the sort.
+  const changed = r.filter(f=>f.st||f.copy||f.remo||f.addo).sort((x,y)=>(y.chg||0)-(x.chg||0));
+  r = changed.concat(r.filter(f=>!f.st&&!f.copy&&!f.remo&&!f.addo));
+  return r;
+}
+
+/* Add to other locations (was Copy): each chosen song becomes a pending add at the target location (if it has room and doesn't have the song),
+   and the source row gets an "Adding at N other locations" status until the 2 AM update. */
+function locHasSong(lid, f){
+  const st = S.ls[lid] || (S.ls[lid] = initLoc(lid));
+  return st.favs.some(x=>x.title===f.title && x.artist===f.artist && x.st!=="dRem" && x.st!=="pRem");
+}
+function copySongs(ids, locIds){
+  const refsBySong = {}; const skipped = {};
+  for (const lid of locIds){
+    const st = S.ls[lid] || (S.ls[lid] = initLoc(lid));
+    for (const id of ids){
+      const f = S.favs.find(x=>x.id===id); if (!f) continue;
+      const has = st.favs.some(x=>x.title===f.title && x.artist===f.artist && x.st!=="dRem" && x.st!=="pRem");
+      const room = CAP - countFor(lid);
+      if (has || room<=0){ skipped[lid]=(skipped[lid]||0)+1; continue; }
+      const t = mk({id:"cp", title:f.title, artist:f.artist, style:f.style, tags:f.tags}, "pAdd");
+      st.favs.push(t);
+      (refsBySong[id] = refsBySong[id] || []).push({loc:lid, fid:t.id});
+    }
+  }
+  let n=0;
+  for (const id of ids){
+    const f = S.favs.find(x=>x.id===id); const refs = refsBySong[id]; if (!f || !refs) continue;
+    f.copy = {refs:(f.copy?f.copy.refs:[]).concat(refs)}; f.chg = ++chSeq; n++;
+  }
+  render();
+  const names = locIds.map(i=>LOCATIONS.find(l=>l.id===i).name);
+  const sk = Object.values(skipped).reduce((a,b)=>a+b,0);
+  toast(`${plural(n,"song")} will be added to Favorites at ${plural(locIds.length,"location")} ${NEXT}.${sk?` ${plural(sk,"add")} skipped (already there or no room).`:""}`, () => { for (const id of ids) uncopy(id); });
+}
+/* Remove from more locations: matching songs at the other locations become pending removals,
+   and the source row gets a "Leaving Favorites at N other locations" status until the 2 AM update. */
+function removeMore(ids, locIds, here){
+  const snap = S.favs.slice(), prevSt = new Map(S.favs.map(f=>[f,[f.st,f.chg]]));
+  const refsBySong = {};
+  for (const lid of locIds){
+    const st = S.ls[lid] || (S.ls[lid] = initLoc(lid));
+    for (const id of ids){
+      const f = S.favs.find(x=>x.id===id); if (!f) continue;
+      const t = st.favs.find(x=>x.title===f.title && x.artist===f.artist && !x.st); if (!t) continue;
+      t.st = "pRem"; t.chg = ++chSeq;
+      (refsBySong[id] = refsBySong[id] || []).push({loc:lid, fid:t.id});
+    }
+  }
+  for (const id of ids){
+    const f = S.favs.find(x=>x.id===id); const refs = refsBySong[id]; if (!f || !refs) continue;
+    f.remo = {refs:(f.remo?f.remo.refs:[]).concat(refs)}; f.chg = ++chSeq;
+  }
+  if (here) removeSongs(ids); else S.selected.clear();
+  render();
+  const n = locIds.length + (here?1:0);
+  const when = here && S.model==="draft" ? "when you send (here) and "+NEXT+" (other locations)" : NEXT;
+  toast(`${plural(ids.length,"song")} will be removed from Favorites at ${plural(n,"location")} ${when}.`, () => {
+    for (const id of ids) unremo(id);
+    S.favs.splice(0, S.favs.length, ...snap); for (const [f,[st,chg]] of prevSt){ f.st=st; f.chg=chg; }
+  });
+}
+function unremo(id){
+  const f = S.favs.find(x=>x.id===id); if (!f || !f.remo) return;
+  for (const r of f.remo.refs){ const st=S.ls[r.loc]; if (!st) continue; const t=st.favs.find(x=>x.id===r.fid && x.st==="pRem"); if (t) t.st=null; }
+  delete f.remo;
+}
+function remoChip(f){
+  if (!f.remo || f.st) return ""; /* merged into stChip */
+  const locs = [...new Set(f.remo.refs.map(r=>r.loc))].map(id=>LOCATIONS.find(l=>l.id===id).name);
+  return `<span class="chip p-rem" title="Leaving Favorites at ${esc(locs.join(", "))}">${I.clock}Leaving Favorites at ${locs.length} other location${locs.length===1?"":"s"} at 2 AM</span>`;
+}
+function uncopy(id){
+  const f = S.favs.find(x=>x.id===id); if (!f || !f.copy) return;
+  for (const r of f.copy.refs){ const st=S.ls[r.loc]; if (!st) continue; const i=st.favs.findIndex(x=>x.id===r.fid && x.st==="pAdd"); if (i>=0) st.favs.splice(i,1); }
+  delete f.copy;
+}
+function copyChip(f){
+  if (!f.copy) return "";
+  const locs = [...new Set(f.copy.refs.map(r=>r.loc))].map(id=>LOCATIONS.find(l=>l.id===id).name);
+  return `<span class="chip p-add" title="Adding at ${esc(locs.join(", "))}">${I.clock}Adding at ${locs.length} other location${locs.length===1?"":"s"} at 2 AM</span>`;
+}
+/* One status per row: a change here and the same change at other locations merge into one chip ("at N locations"). */
+function otherLocNames(x){ return x ? [...new Set(x.refs.map(r=>r.loc))].map(id=>LOCATIONS.find(l=>l.id===id).name) : []; }
+function stChip(f){
+  const rem = f.st==="dRem"||f.st==="pRem", add = f.st==="dAdd"||f.st==="pAdd";
+  const others = otherLocNames(rem ? f.remo : add ? f.addo : null);
+  if (others.length){
+    const n = others.length+1, where = esc(["This location"].concat(others).join(", "));
+    const draft = f.st[0]==="d";
+    const label = rem ? `Leaving Favorites at ${n} locations${draft?" · here when you send":" at 2 AM"}` : `Adding at ${n} locations${draft?" · here when you send":" at 2 AM"}`;
+    return `<span class="chip ${rem?"p-rem":"p-add"}" title="${where}">${draft?I.edit:I.clock}${label}</span>`;
+  }
+  if (f.st==="dAdd") return `<span class="chip d-add">${I.edit}Will add when you send</span>`;
+  if (f.st==="dRem") return `<span class="chip d-rem">${I.edit}Will leave Favorites when you send</span>`;
+  if (f.st==="pAdd") return `<span class="chip ${S.missed?"wait":"p-add"}">${S.missed?I.warnf:I.clock}${S.missed?"Adding · waiting for jukebox":"Adding at 2 AM"}</span>`;
+  if (f.st==="pRem") return `<span class="chip ${S.missed?"wait":"p-rem"}">${S.missed?I.warnf:I.clock}${S.missed?"Leaving Favorites · waiting for jukebox":"Leaving Favorites at 2 AM"}</span>`;
+  return "";
+}
+function rowHTML(f){
+  const sel=S.selected.has(f.id), rem=isRem(f), adding=f.st==="dAdd"||f.st==="pAdd";
+  const cls=[sel?"sel":"", rem?"rem":"", f.st==="dAdd"?"d-add":"", f.st==="pAdd"?"p-add":"", f.avail?"":"unavail"].join(" ");
+  const act0 = f.st ? `<button class="btn sm text" data-act="undo" data-id="${f.id}" aria-label="${f.st[0]==="d"?"Undo":"Cancel"} change to ${esc(f.title)}">${f.st[0]==="d"?"Undo":"Cancel"}</button>` : "";
+  const act = (f.copy&&!f.st?`<button class="btn sm text" data-act="uncopy" data-id="${f.id}" aria-label="Cancel adding ${esc(f.title)} at other locations">Cancel</button>`: f.copy?`<button class="btn sm text" data-act="uncopy" data-id="${f.id}" aria-label="Cancel adding ${esc(f.title)} at other locations">Cancel</button>`:"") + act0;
+  const actA = f.addo ? `<button class="btn sm text" data-act="unaddo" data-id="${f.id}" aria-label="Cancel adding ${esc(f.title)} at other locations">Cancel</button>` : "";
+  const actR = f.remo ? `<button class="btn sm text" data-act="unremo" data-id="${f.id}" aria-label="Cancel removal of ${esc(f.title)} at other locations">Cancel</button>` : "";
+  return `<tr class="${cls}">
+    <td class="c-chk">${CB(`data-act="toggle" data-id="${f.id}" aria-label="Select ${esc(f.title)}" ${sel?"checked":""} ${f.st?"disabled":""}`)}</td>
+    <td><div class="tcell"><span class="art">${I.note}</span><div>
+      <div class="t1"><span class="ttl">${esc(f.title)}</span>${tagHTML(f)}${!rem&&!adding?`<span class="onecr" title="Sold at 1 credit">${I.heart}1CR</span>`:""}</div>
+      <div class="t2 m-only">${esc(f.artist)}</div><div class="marks">${stChip(f)}${addoChip(f)}${remoChip(f)}${copyChip(f)}</div></div></div></td>
+    <td class="c-artist">${esc(f.artist)}</td><td class="c-style">${esc(f.style)}</td>
+    <td class="n num">${adding?"—":f.plays}</td><td class="c-last num">${f.last?fmt(f.last):"—"}</td><td class="c-added num">${adding?"—":fmt(f.added)}</td>
+    <td class="c-avail">${f.avail?"Available":"Unavailable"}</td><td class="c-act">${act}${f.st?"":actR+actA}</td></tr>`;
+}
+function grid(){
+  const r = rows(), q=S.q.trim();
+  const head = "";
+  if (!r.length){
+    return head + `<div class="empty">${q?`No favorites match “${esc(q)}”.`:S.filter==="changes"?"No changes. Songs you add or remove show here until the jukebox updates.":"No favorites yet."}</div>`;
+  }
+  const vis = r.slice(0, q?r.length:S.shown);
+  const th=(k,l,cls)=>{const on=S.sort.key===k;return `<th class="${cls||""}" ${on?`aria-sort="${S.sort.dir==="asc"?"ascending":"descending"}"`:""}><button data-act="sort" data-v="${k}">${l}${on?I.arrow.replace('class="ico"',`class="ico ${S.sort.dir==="asc"?"":"desc"}"`):""}</button></th>`;};
+  const selectable = vis.filter(f=>!isRem(f));
+  const on = selectable.filter(f=>S.selected.has(f.id)).length;
+  const more = !q && r.length > S.shown;
+  return head + `<div class="gridwrap"><table><thead><tr>
+    <th class="c-chk">${CB(`data-act="selpage" id="selpage" aria-label="Select all shown" ${on&&on===selectable.length?"checked":""}`)}</th>
+    ${th("title","Title")}${th("artist","Artist","c-artist")}<th class="c-style">Style</th>${th("plays","Plays","n")}${th("last","Last played","c-last")}${th("added","Added","c-added")}<th class="c-avail">Availability</th><th class="c-act"><span style="position:absolute;left:-9999px">Actions</span></th>
+    </tr></thead><tbody>${vis.map(rowHTML).join("")}</tbody></table></div>
+    ${more?`<div class="loadmore"><button class="btn" data-act="more">Load more</button><span class="caption num">Showing ${S.shown} of ${r.length}</span></div>`:""}
+    ${!q && S.filter==="all" && !more ? `<div class="loadmore"><span class="caption num">This demo loads ${S.favs.length} songs. The other ${S.hidden} in the count aren't shown.</span></div>`:""}`;
+}
+function catalog(){
+  const q=S.q.trim().toLowerCase(); if (!q) return "";
+  const inFav = new Set(S.favs.map(f=>f.title+"|"+f.artist));
+  const res = CATALOG.filter(c=>!inFav.has(c.title+"|"+c.artist) && (c.title+" "+c.artist+" "+c.style).toLowerCase().includes(q)).slice(0,8);
+  const fr = free();
+  let msg = "";
+  if (res.length && fr<=0){
+    msg = `<div class="alert warn catmsg" style="margin-top:0">${I.warn}<div class="a-msg">${count()>CAP ? `You're over the ${CAP}-song limit. Remove ${plural(count()-CAP,"song")} from Favorites to add new ones.` : `Favorites is full. Remove a song from your Favorites${S.model==="draft"?" (it frees a spot right away)":""}, then add.`}</div></div>`;
+  }
+  const sel = res.filter(c=>S.catSel.has(c.id));
+  const allOn = res.length && (sel.length===res.length || (sel.length>0 && sel.length>=fr));
+  const head = `<div class="sechead cathead">${res.length?`<span class="cbcol">${CB(`data-act="catall" id="catall" aria-label="Select all catalog results" ${allOn?"checked":""} ${fr<=0?"disabled":""}`)}</span>`:""}Add from the catalog <span class="n num">${res.length}${fr>0&&res.length?` · room for ${plural(fr,"more song")}`:""}</span>
+    ${sel.length?`<button class="btn sm solid" data-act="addmore">Add ${plural(sel.length,"song")}</button>`:""}</div>`;
+  return `<div class="cat">${head}${msg}
+    ${res.length ? res.map(c=>{ const on=S.catSel.has(c.id); const dis = !on && sel.length>=fr; return `<div class="res ${on?"sel":""}"><span class="cbcol">${CB(`data-act="catsel" data-id="${c.id}" aria-label="Select ${esc(c.title)}" ${on?"checked":""} ${dis?"disabled":""}`)}</span><span class="art">${I.note}</span><div class="grow"><span class="ttl">${esc(c.title)} ${tagHTML(c)}</span><span class="t2">${esc(c.artist)} · ${esc(c.style)}</span></div><span class="plays num" title="Plays across the network, last 30 days">${c.netPlays} network plays</span></div>`; }).join("") : `<div class="empty">No other songs in the catalog match “${esc(S.q)}”.</div>`}
+  </div>`;
+}
+
+function changesBar(){
+  const d=drafts(), p=pendings();
+  if (!d.length && !p.length) return "";
+  let h="";
+  if (d.length){
+    const a=n(d,"dAdd"), r=n(d,"dRem");
+    h += `<div class="crow"><span class="cicon draft">${I.edit}</span><span class="txt"><b class="num">${[a?plural(a,"song")+" to add":"", r?plural(r,"song")+" to remove":""].filter(Boolean).join(", ")}</b><span class="body2">Not sent yet. Nothing changes on the jukebox until you send.</span></span>
+      <span class="acts">${S.filter==="changes"?"":`<button class="btn text" data-act="showchanges">Show changes</button>`}<button class="btn text" data-act="undodrafts">Undo all</button><button class="btn solid" data-act="review" ${count()>CAP?"disabled":""}>Review and send</button></span></div>`;
+  }
+  if (p.length){
+    const a=n(p,"pAdd"), r=n(p,"pRem");
+    const what = [a?plural(a,"song")+" to add":"", r?plural(r,"song")+" to remove":""].filter(Boolean).join(", ");
+    h += S.missed
+      ? `<div class="crow"><span class="cicon wait">${I.warnf}</span><span class="txt"><b class="num">${what} · waiting for the jukebox</b><span class="body2">It hasn't updated since ${LAST_MISSED}. Changes apply the next time it connects. Check that it's on and online.</span></span><span class="acts"><button class="btn" data-act="showchanges">Show changes</button><button class="btn text" data-act="stub" data-v="Get help">Get help</button></span></div>`
+      : `<div class="crow"><span class="cicon pend">${I.clock}</span><span class="txt"><b class="num">${what} · updates ${NEXT}</b><span class="body2">${NEXT_DATE}. You can cancel any change until then.</span></span><span class="acts"><button class="btn" data-act="showchanges">Show changes</button></span></div>`;
+  }
+  return `<div class="changes" role="region" aria-label="Changes">${h}</div>`;
+}
+
+const ICON_WH = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 19V8.35c0-.82-.5-1.55-1.26-1.86l-8-3.2c-.48-.19-1.01-.19-1.49 0l-8 3.2C2.5 6.8 2 7.54 2 8.35V19c0 1.1.9 2 2 2h3v-9h10v9h3c1.1 0 2-.9 2-2zm-11 0H9v2h2v-2zm2-3h-2v2h2v-2zm2 3h-2v2h2v-2z"/></svg>';
+const ICON_ADD = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 13h-5v5c0 .55-.45 1-1 1s-1-.45-1-1v-5H6c-.55 0-1-.45-1-1s.45-1 1-1h5V6c0-.55.45-1 1-1s1 .45 1 1v5h5c.55 0 1 .45 1 1s-.45 1-1 1z"/></svg>';
+function pageHead(){
+  return `<div class="head-row"><div class="title-wrap"><h1 class="device-id">Music</h1></div>
+    <div class="head-actions">
+      <button class="icon-btn" type="button" aria-label="Help"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M11 18h2v-2h-2v2zm1-16C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-2.21 0-4 1.79-4 4h2c0-1.1.9-2 2-2s2 .9 2 2c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5 0-2.21-1.79-4-4-4z"/></svg></button>
+      <button class="icon-btn" type="button" aria-label="Venues"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 7V5c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2h-8zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm9 12h-7v-2h2v-2h-2v-2h2v-2h-2V9h7c.55 0 1 .45 1 1v8c0 .55-.45 1-1 1zm-1-8h-2v2h2v-2zm0 4h-2v2h2v-2z"/></svg></button>
+      <span class="avatar" aria-label="Account">J</span></div></div>
+    <div class="tabs" role="tablist" aria-label="Music">${["Manage","Requests"].map(t=>`<button class="tab" role="tab" aria-selected="${t==="Manage"}" data-act="noop">${t}</button>`).join("")}</div>`;
+}
+function detailHead(){
+  const L = curLoc();
+  return `<div class="dhead"><h2 class="dtitle">${esc(L.name)}&nbsp; - &nbsp;<span class="num">${L.id}</span></h2></div>
+    <div class="tabs subtabs" role="tablist" aria-label="Location music">${["Settings","Filters","Favorites","Morph"].map(t=>`<button class="tab" role="tab" aria-selected="${t==="Favorites"}" data-act="noop">${t}</button>`).join("")}</div>`;
+}
+function locPanel(){
+  const q = S.lq.trim().toLowerCase();
+  const list = LOCATIONS.filter(l=>!q || (l.name+" "+l.id).toLowerCase().includes(q));
+  return `<section class="card lp" aria-labelledby="lp-title">
+    <div class="lp-head"><h2 class="h3" id="lp-title">Locations</h2><span class="n num">${LOCATIONS.length}</span></div>
+    <div class="lp-tools"><div class="lsearch">${I.search}<input id="lq" data-input="lq" type="search" autocomplete="off" aria-label="Search locations" placeholder="Location name or ID" value="${esc(S.lq)}"></div>
+      <button class="btn lp-add" data-act="stub" data-v="Add location">${ICON_ADD}Add</button></div>
+    <ul class="lp-list">${list.length ? list.map(l=>{
+      const st = locState(l.id), dn = st ? st.favs.filter(f=>f.st==="dAdd"||f.st==="dRem").length : 0, pn = st ? st.favs.filter(f=>f.st==="pAdd"||f.st==="pRem").length : 0;
+      const badge = dn ? `<span class="lbadge d num">${dn} unsent</span>` : pn ? `<span class="lbadge p num">${pn} pending</span>` : "";
+      return `<li><button class="lrow" data-act="locgo" data-id="${l.id}" ${l.id===S.loc?'aria-current="page"':""}><span class="lt"><span class="ln">${esc(l.name)}</span><span class="lid">${l.wh?ICON_WH:""}${l.id}</span></span>${badge}</button></li>`;
+    }).join("") : `<li class="lp-empty">No locations match “${esc(S.lq)}”.</li>`}</ul>
+  </section>`;
+}
+function mainHTML(){
+  return `<div class="split"><aside aria-label="Locations">${locPanel()}</aside><div class="fcol">${detailHead()}
+  <section class="card" aria-labelledby="fav-title">
+    ${cardHead().replace('<h2 class="h3">','<h2 class="h3" id="fav-title">')}
+    ${overAlert()}
+    ${S.missed && pendings().length ? `<div class="alert warn" role="status">${I.warn}<div class="a-msg"><b>Waiting for the jukebox.</b> It hasn't updated since ${LAST_MISSED}, so ${plural(pendings().length,"change")} will apply the next time it connects. Check that it's on and online.</div><div class="a-act"><button class="btn sm text" data-act="stub" data-v="Get help">Get help</button></div></div>` : ""}
+    ${toolbar()}
+  </section>
+  <section class="card tcard" aria-label="Songs">
+    ${grid()}
+  </section>
+  ${S.model==="draft"?`<div class="noterow" style="padding:0">${note("v","Review and send: changes stay on this page until you send them. Needs a dev check, since today every action becomes pending on the server right away. Leaving with unsent changes should ask first.")}</div>`
+    :`<div class="noterow" style="padding:0">${note("v","Apply right away: each add or remove is sent at once (as today), with Undo in the snackbar and a Cancel link on the row until 2 AM. Other locations go through Add to other locations.")}</div>`}</div></div>`;
+}
+function questions(){
+  if (TEST) return "";
+  return `<div class="oq">
+    <section><h3>What changed from today</h3><ul>
+      <li><b>Search filters your Favorites.</b> Adding lives in one "Add songs" flow under the action button: search the catalog, pick songs, then pick locations. It replaces Add Music, Remove Music and Top Plays.</li>
+      <li><b>Visible checkboxes and a selection bar</b> replace the Select and Action menus.</li>
+      <li><b>Quick Manage</b> is gone.</li>
+      <li><b>Pending</b> says when the change happens (tonight at 2 AM) and every change can be undone or cancelled until then.</li>
+      <li><b>The count includes songs being added,</b> against the new 500 limit.</li></ul></section>
+    <section><h3>Open questions</h3><ol>
+      <li>Is 2 AM the jukebox's local time?</li>
+      <li>Moving from 2,000 to 500: deadline, auto-trim or keep the old limit?</li>
+      <li>Is Top Plays removed for good? Does pricing agree?</li>
+      <li>1CR limit (300) vs Favorites cap (500): which songs are 1 credit?</li>
+      <li>How often do operators copy favorites to other locations?</li></ol></section>
+  </div>`;
+}
+
+function modal(){
+  const m=S.modal; if (!m) return "";
+  let title, body, foot;
+  if (m.type==="review"){
+    const d=drafts(), adds=d.filter(f=>f.st==="dAdd"), rems=d.filter(f=>f.st==="dRem");
+    title="Review changes";
+    const locs = otherLocs().map(l=>{ const fr=CAP-l.used, fit=Math.max(0,Math.min(fr, adds.length)); return `<label class="loc">${CB(`data-act="loc" data-id="${l.id}" ${m.locs.has(l.id)?"checked":""}`)}<span class="grow">${esc(l.name)} <span class="t2">${l.code}</span></span><span class="fs num ${fr<=0?"full":""}">${l.used} of ${CAP}${adds.length&&fit<adds.length?` · only ${fit} of ${adds.length} fit`:""}</span></label>`; }).join("");
+    body = `<div class="sum">
+      ${adds.length?`<div><h4><span class="chip p-add">Add</span>${plural(adds.length,"song")}</h4><ul>${adds.map(f=>`<li>${esc(f.title)} · ${esc(f.artist)}</li>`).join("")}</ul></div>`:""}
+      ${rems.length?`<div style="margin-top:12px"><h4><span class="chip p-rem">Remove from Favorites</span>${plural(rems.length,"song")}</h4><ul>${rems.map(f=>`<li>${esc(f.title)} · ${esc(f.artist)} · ${plural(f.plays,"play")}</li>`).join("")}</ul></div>`:""}
+    </div>
+    <div class="box">${I.info}<span class="num">After this: ${count()} of ${CAP} songs. The jukebox updates ${NEXT} (${NEXT_DATE}). You can cancel until then.</span></div>
+    <div><button class="linkbtn" data-act="morelocs" aria-expanded="${m.showLocs}">${m.showLocs?"Only this location":"Also send to other locations"}</button></div>
+    ${m.showLocs?`<div class="loclist">${locs}</div>${[...m.locs].some(id=>{const l=otherLocs().find(x=>x.id===id);return CAP-l.used<adds.length;})?`<div class="alert warn" style="margin:0">${I.warn}<div class="a-msg">Some locations don't have room for every add. Songs that don't fit there are skipped.</div></div>`:""}${note("q","Removals apply only if that location has the same song. Is sending to several locations common enough to keep here?")}`:""}`;
+    foot = `<button class="btn text" data-act="close">Back to editing</button><button class="btn solid" data-act="send">Send ${plural(d.length,"change")}</button>`;
+  }
+  if (m.type==="cancelpending"){
+    const list = pendingByLoc(), sel = list.filter(x=>m.locs.has(x.l.id)), n = sel.reduce((a,x)=>a+x.adds+x.rems,0);
+    const what = x => [x.adds?plural(x.adds,"add"):"", x.rems?plural(x.rems,"removal"):""].filter(Boolean).join(", ");
+    const allOn = sel.length===list.length;
+    title = "Cancel pending changes";
+    body = `<p class="body2">These changes haven't reached the jukebox yet. Cancelling puts Favorites back the way it is now on the jukebox.</p>
+      <div class="loclist">
+        <label class="loc" style="background:var(--box)">${CB(`data-act="cpall" ${allOn?"checked":""}`)}<span class="grow"><b>All locations</b></span><span class="fs num">${plural(list.reduce((a,x)=>a+x.adds+x.rems,0),"change")}</span></label>
+        ${list.map(x=>`<label class="loc">${CB(`data-act="loc" data-id="${x.l.id}" ${m.locs.has(x.l.id)?"checked":""}`)}<span class="grow">${esc(x.l.name)} <span class="t2">${x.l.id}</span>${x.l.id===S.loc?`<span class="t2" style="display:block">This location</span>`:""}</span><span class="fs num">${what(x)}</span></label>`).join("")}
+      </div>
+      <div class="box">${I.info}<span>Changes you keep still go out ${NEXT}.</span></div>`;
+    foot = `<button class="btn text" data-act="close">Keep changes</button><button class="btn solid" data-act="docancelpending" ${n?"":"disabled"}>Cancel ${plural(n,"change")}</button>`;
+  }
+  if (m.type==="addsongs"){
+    // Step 1 of Add songs: pick songs by searching the catalog or from a TouchTunes playlist. Picks are shared across both tabs.
+    const q=(m.q||"").trim().toLowerCase(), fr=free(), tab=m.tab||"search";
+    const inFav = new Set(S.favs.filter(f=>!isRem(f)).map(f=>f.title+"|"+f.artist));
+    const row = c => { const on=S.catSel.has(c.id), isF=inFav.has(c.title+"|"+c.artist); return `<label class="res ${on?"sel":""}" style="padding-left:16px;padding-right:16px;cursor:${isF?"default":"pointer"}"><span class="cbcol">${CB(`data-act="catsel" data-id="${c.id}" aria-label="Select ${esc(c.title)}" ${on||isF?"checked":""} ${isF?"disabled":""}`)}</span><span class="art">${I.note}</span><span class="grow"><span class="ttl">${esc(c.title)} ${tagHTML(c)}</span><span class="t2">${esc(c.artist)} · ${esc(c.style)}</span></span>${isF?`<span class="chip d-add">In Favorites</span>`:`<span class="plays num" title="Plays across the network, last 30 days">${c.netPlays} network plays</span>`}</label>`; };
+    const tabs = `<div class="tabs subtabs" role="tablist" aria-label="Ways to add" style="margin:-8px 0 0">${[["search","Search the catalog"],["pl","TouchTunes playlists"]].map(([k,l])=>`<button class="tab" role="tab" aria-selected="${tab===k}" data-act="addtab" data-v="${k}">${l}</button>`).join("")}</div>`;
+    const full = fr<=0?`<div class="alert warn" style="margin:0">${I.warn}<div class="a-msg">Favorites is full here. You can still add these songs to other locations in the next step.</div></div>`:`<p class="caption num">Room for ${plural(fr,"more song")} at ${esc(curLoc().name)}.</p>`;
+    let inner;
+    if (tab==="search"){
+      const res = q ? CATALOG.filter(c=>!inFav.has(c.title+"|"+c.artist) && (c.title+" "+c.artist+" "+c.style).toLowerCase().includes(q)).slice(0,8) : [];
+      const picked = CATALOG.filter(c=>S.catSel.has(c.id) && !res.includes(c)); // earlier picks stay visible when the search changes
+      inner = `<div class="search" style="flex:none;width:100%">${I.search}<input id="cq" data-input="cq" type="search" autocomplete="off" aria-label="Search the catalog" placeholder="Search the catalog by song or artist" value="${esc(m.q||"")}"></div>${full}
+        <div class="loclist">${picked.map(row).join("")}${res.map(row).join("") || (picked.length?"":`<div class="empty" style="padding:24px">${q?`No songs match “${esc(m.q)}” in the catalog.`:`Search for a song or artist, or <button class="linkbtn" data-act="addtab" data-v="pl">browse TouchTunes playlists</button>.`}</div>`)}</div>`;
+    } else if (!m.pl){
+      const cat = m.cat||"Essentials", pls = PLAYLISTS.filter(p=>p.cat===cat);
+      inner = `<div class="pl-tools"><button class="btn sm text" data-act="addtab" data-v="search">${I.back}Back to search</button></div>${full}<div class="pl-split"><div class="pl-cats" role="tablist" aria-label="Playlist categories">${PL_CATS.map(c=>`<button role="tab" aria-selected="${c===cat}" data-act="plcat" data-v="${esc(c)}">${esc(c)}</button>`).join("")}</div>
+        <ul class="pl-list">${pls.map(p=>{ const sg=p.songs(), n=sg.filter(so=>!inFavs(so)).length, picked=sg.filter(so=>S.catSel.has(ensureCat(so))).length; return `<li><button data-act="plpick" data-id="${p.id}"><span class="grow"><span class="ttl">${esc(p.name)}</span><span class="t2 num">${plural(sg.length,"song")}${n<sg.length?` · ${sg.length-n} already in Favorites`:""}${picked?` · ${picked} selected`:""}</span></span>${I.chev}</button></li>`; }).join("")}</ul></div>`;
+    } else {
+      const P = PLAYLISTS.find(p=>p.id===m.pl), sg = P.songs().map(so=>CATALOG.find(c=>c.id===ensureCat(so)));
+      const avail = sg.filter(c=>!inFav.has(c.title+"|"+c.artist)), allOn = avail.length && avail.every(c=>S.catSel.has(c.id));
+      inner = `${full}<div class="pl-tools"><button class="btn sm text" data-act="plback">${I.back}All playlists</button><span class="body2"><b>${esc(P.name)}</b> · <span class="num">${plural(avail.length,"song")} not in Favorites yet</span></span>${avail.length?`<button class="btn sm text" data-act="plselall">${allOn?"Clear":"Select all"}</button>`:""}</div>
+        <div class="loclist" style="max-height:420px;overflow:auto">${sg.map(row).join("")}</div>`;
+    }
+    title = tab==="search" ? "Add songs" : "Add songs from TouchTunes playlists";
+    body = inner; // no tabs: playlists open from the "browse TouchTunes playlists" link
+    foot = `<span class="body2 num" style="margin-right:auto;display:inline-flex;align-items:center;gap:8px">${S.catSel.size?`${plural(S.catSel.size,"song")} selected<button class="btn sm text" data-act="catclear">Clear</button>`:""}</span><button class="btn text" data-act="close">Cancel</button><button class="btn solid" data-act="addnext" ${S.catSel.size?"":"disabled"}>Next</button>`;
+  }
+  if (m.type==="addmore"){
+    const ids=[...S.catSel], k=ids.length, songs=ids.map(id=>CATALOG.find(c=>c.id===id)); title="Add to Favorites";
+    // Only suggest locations that are missing at least one of the songs
+    const cands=otherLocs().map(l=>({l,need:songs.filter(c=>!locHasSong(l.id,c)).length})).filter(c=>c.need>0);
+    const hidden=otherLocs().length-cands.length, here=curLoc(), frH=free(), n=m.locs.size+(m.here?1:0);
+    const fs=(fr,need)=>`<span class="fs num ${fr<=0?"full":""}">${fr<=0?"Full":`${plural(fr,"spot")} free${fr<need?` · only ${fr} fit`:""}`}</span>`;
+    body = `<p class="body2">Add ${plural(k,"song")} to Favorites at:</p><div class="loclist">
+        <label class="loc">${CB(`data-act="remhere" ${m.here?"checked":""} ${frH<=0?"disabled":""}`)}<span class="grow">${esc(here.name)} <span class="t2">${here.id}</span><span class="t2" style="display:block">This location</span></span>${fs(frH,k)}</label>
+        ${cands.map(({l,need})=>{const fr=CAP-l.used;return `<label class="loc">${CB(`data-act="loc" data-id="${l.id}" ${m.locs.has(l.id)?"checked":""} ${fr<=0?"disabled":""}`)}<span class="grow">${esc(l.name)} <span class="t2">${l.code}</span>${need<k?`<span class="t2" style="display:block">Already has ${k-need} of ${k}</span>`:""}</span>${fs(fr,need)}</label>`;}).join("")}</div>
+      ${!cands.length?`<p class="caption">Every other location already has ${k===1?"this song":"these songs"}.</p>`:hidden?`<p class="caption">${plural(hidden,"location")} not shown because ${hidden===1?"it already has":"they already have"} ${k===1?"this song":"these songs"}.</p>`:""}
+      <div class="box">${I.info}<span>Songs are added at each location ${NEXT}. You can cancel until then.</span></div>`;
+    foot = `${m.back?`<button class="btn text" data-act="addback" style="margin-right:auto">Back</button>`:""}<button class="btn text" data-act="close">Cancel</button><button class="btn solid" data-act="doaddmore" ${n?"":"disabled"}>Add to ${plural(n,"location")}</button>`;
+  }
+  if (m.type==="removemore"){
+    const k=S.selected.size; title="Remove from Favorites";
+    const sel=[...S.selected].map(id=>S.favs.find(x=>x.id===id)).filter(Boolean);
+    // Only suggest locations that have at least one of the selected songs
+    const cands=otherLocs().map(l=>({l,has:sel.filter(f=>locHasSong(l.id,f)).length})).filter(c=>c.has>0);
+    const hidden=otherLocs().length-cands.length, n=m.locs.size+(m.here?1:0), here=curLoc();
+    body = `<p class="body2">Remove ${plural(k,"song")} from Favorites at:</p><div class="loclist">
+        <label class="loc">${CB(`data-act="remhere" ${m.here?"checked":""}`)}<span class="grow">${esc(here.name)} <span class="t2">${here.id}</span><span class="t2" style="display:block">This location</span></span></label>
+        ${cands.map(({l,has})=>`<label class="loc">${CB(`data-act="loc" data-id="${l.id}" ${m.locs.has(l.id)?"checked":""}`)}<span class="grow">${esc(l.name)} <span class="t2">${l.code}</span>${has<k?`<span class="t2" style="display:block">Has ${has} of ${k}</span>`:""}</span></label>`).join("")}</div>
+      ${!cands.length?`<p class="caption">No other location has ${k===1?"this song":"these songs"} in Favorites.</p>`:hidden?`<p class="caption">${plural(hidden,"location")} not shown because ${hidden===1?"it doesn't have":"they don't have"} ${k===1?"this song":"these songs"}.</p>`:""}
+      <div class="box">${I.info}<span>Songs leave Favorites at each location ${NEXT}. You can cancel until then.</span></div>`;
+    foot = `<button class="btn text" data-act="close">Cancel</button><button class="btn solid" data-act="doremovemore" ${n?"":"disabled"}>Remove from ${plural(n,"location")}</button>`;
+  }
+  if (m.type==="copy"){
+    const k=S.selected.size; title="Add to other locations";
+    const sel=[...S.selected].map(id=>S.favs.find(x=>x.id===id)).filter(Boolean);
+    // Only suggest locations that are missing at least one of the selected songs
+    const cands=otherLocs().map(l=>({l,need:sel.filter(f=>!locHasSong(l.id,f)).length})).filter(c=>c.need>0);
+    const hidden=otherLocs().length-cands.length;
+    body = `<p class="body2">Add ${plural(k,"song")} to Favorites at:</p>${cands.length?`<div class="loclist">${cands.map(({l,need})=>{const fr=CAP-l.used;return `<label class="loc">${CB(`data-act="loc" data-id="${l.id}" ${m.locs.has(l.id)?"checked":""} ${fr<=0?"disabled":""}`)}<span class="grow">${esc(l.name)} <span class="t2">${l.code}</span>${need<k?`<span class="t2" style="display:block">Already has ${k-need} of ${k}</span>`:""}</span><span class="fs num ${fr<=0?"full":""}">${fr<=0?"Full":`${plural(fr,"spot")} free${fr<need?` · only ${fr} fit`:""}`}</span></label>`;}).join("")}</div>`:`<div class="box">${I.info}<span>Every other location already has ${k===1?"this song":"these songs"}.</span></div>`}
+      ${hidden&&cands.length?`<p class="caption">${plural(hidden,"location")} not shown because ${hidden===1?"it already has":"they already have"} ${k===1?"this song":"these songs"}.</p>`:""}
+      <div class="box">${I.info}<span>Songs are added at each location ${NEXT}. You can cancel until then.</span></div>`;
+    foot = `<button class="btn text" data-act="close">Cancel</button><button class="btn solid" data-act="docopy" ${m.locs.size?"":"disabled"}>Add to ${plural(m.locs.size||1,"location")}</button>`;
+  }
+  if (m.type==="confirmremove"){
+    const ids=[...S.selected]; title=`Remove ${plural(ids.length,"song")} from Favorites?`;
+    body = `<p class="body2">They leave Favorites ${NEXT}. You can cancel until then.</p><div class="loclist">${ids.slice(0,6).map(id=>{const f=S.favs.find(x=>x.id===id);return `<div class="loc" style="cursor:default"><span class="grow">${esc(f.title)} · ${esc(f.artist)}</span><span class="fs num">${plural(f.plays,"play")}</span></div>`}).join("")}${ids.length>6?`<div class="loc" style="cursor:default"><span class="grow t2">and ${ids.length-6} more</span></div>`:""}</div>`;
+    foot = `<button class="btn text" data-act="close">Cancel</button><button class="btn danger" data-act="doremove">Remove ${plural(ids.length,"song")}</button>`;
+  }
+  if (m.type==="pl"){
+    const fr = free();
+    if (!m.pl){
+      title = "TouchTunes playlists";
+      const pls = PLAYLISTS.filter(p=>p.cat===m.cat);
+      body = `<p class="body2">Pick a playlist, then choose which of its songs to add to Favorites at ${esc(curLoc().name)}.</p>
+        <div class="pl-split"><div class="pl-cats" role="tablist" aria-label="Playlist categories">${PL_CATS.map(c=>`<button role="tab" aria-selected="${c===m.cat}" data-act="plcat" data-v="${esc(c)}">${esc(c)}</button>`).join("")}</div>
+        <ul class="pl-list">${pls.map(p=>{ const sg=p.songs(), n=sg.filter(so=>!inFavs(so)).length; return `<li><button data-act="plpick" data-id="${p.id}"><span class="grow"><span class="ttl">${esc(p.name)}</span><span class="t2 num">${plural(sg.length,"song")}${n<sg.length?` · ${sg.length-n} already in Favorites`:""}</span></span>${I.chev}</button></li>`; }).join("")}</ul></div>`;
+      foot = `<button class="btn text" data-act="close">Cancel</button>`;
+    } else {
+      const P = PLAYLISTS.find(p=>p.id===m.pl), sg = P.songs();
+      title = P.name;
+      const avail = sg.map((so,i)=>i).filter(i=>!inFavs(sg[i]));
+      const selN = m.sel.size, allOn = avail.length && avail.filter(i=>m.sel.has(String(i))).length >= Math.min(avail.length, Math.max(fr,0));
+      const top = Math.min(10, avail.length, Math.max(fr,0));
+      const head = fr<=0
+        ? `<div class="alert warn" style="margin:0">${I.warn}<div class="a-msg">${count()>CAP?`You're over the ${CAP}-song limit.`:"Favorites is full."} Remove songs from Favorites before adding from a playlist.</div></div>`
+        : `<div class="pl-tools"><span class="body2 num">${plural(avail.length,"song")} not in Favorites yet · room for ${plural(fr,"more song")}</span>${top?`<button class="btn sm text" data-act="pltop" data-v="${top}">Select top ${top}</button>`:""}</div>`;
+      body = head + `<div class="gridwrap pl-table"><table><thead><tr>
+          <th class="c-chk">${CB(`data-act="plall" id="plall" aria-label="Select all songs not in Favorites" ${selN&&allOn?"checked":""} ${fr<=0||!avail.length?"disabled":""}`)}</th>
+          <th>Song</th><th class="c-style">Genre</th><th class="n">Popularity</th></tr></thead><tbody>
+        ${sg.map((so,i)=>{ const isF=inFavs(so), on=m.sel.has(String(i)), dis=isF || (!on && selN>=fr);
+          return `<tr class="${on?"sel":""}"><td class="c-chk">${CB(`data-act="plsel" data-id="${i}" aria-label="Select ${esc(so.title)}" ${on||isF?"checked":""} ${dis?"disabled":""}`)}</td>
+            <td><div class="tcell"><span class="art">${I.note}</span><div><div class="t1"><span class="ttl">${esc(so.title)}</span>${tagHTML(so)}</div><div class="t2">${esc(so.artist)}</div>${isF?`<div class="marks"><span class="chip d-add">In Favorites</span></div>`:""}</div></div></td>
+            <td class="c-style">${esc(so.style)}</td><td class="n num">${so.pop}</td></tr>`; }).join("")}
+        </tbody></table></div>`;
+      foot = `<span class="body2 num" style="margin-right:auto">${plural(selN,"song")} selected</span><button class="btn text" data-act="close">Cancel</button><button class="btn solid" data-act="pladd" ${selN?"":"disabled"}>Add ${plural(selN,"song")}</button>`;
+    }
+  }
+  return `<div class="scrim"><div class="dialog${m.type==="pl"||(m.type==="addsongs"&&m.tab==="pl")?" wide":""}" role="dialog" aria-modal="true" aria-labelledby="m-title"><div class="d-head">${m.type==="pl"&&m.pl?`<button class="icon-btn" data-act="plback" aria-label="Back to playlists">${I.back}</button>`:""}<h2 class="h3" id="m-title">${esc(title)}</h2><button class="icon-btn" data-act="close" aria-label="Close">${I.close}</button></div><div class="d-body">${body}</div><div class="d-foot">${foot}</div></div></div>`;
+}
+
+let wasModal = null, wasMenu = false, opener = null;
+function render(){
+  const ae=document.activeElement, aid=ae&&ae.id, ss=ae&&ae.selectionStart;
+  const aeAct = ae && ae!==document.body && ae.dataset ? ae.dataset.act : null, aeId = aeAct && ae.dataset.id, aeV = aeAct && ae.dataset.v;
+  // Keep scroll positions of inner scrolling areas (e.g. a table scrolled sideways to reach Remove) across re-renders.
+  const SCROLLERS = ".gridwrap, .pl-table, .lp-list, .pl-list, .d-body";
+  const keep = [...document.querySelectorAll(SCROLLERS)].map(el=>[el.scrollLeft, el.scrollTop]);
+  document.body.classList.toggle("notes-off", !S.notes);
+  document.getElementById("proto").innerHTML = protoBar();
+  document.getElementById("phead").innerHTML = pageHead();
+  document.getElementById("main").innerHTML = mainHTML();
+  document.getElementById("oq").innerHTML = questions();
+  document.getElementById("modal").innerHTML = modal();
+  document.querySelectorAll(SCROLLERS).forEach((el,i)=>{ if (keep[i]){ el.scrollLeft=keep[i][0]; el.scrollTop=keep[i][1]; } });
+  // indeterminate states
+  const sp=document.getElementById("selpage");
+  if (sp){ const vis=rows().slice(0,S.q?undefined:S.shown).filter(f=>!f.st); const on=vis.filter(f=>S.selected.has(f.id)).length; sp.indeterminate = on>0 && on<vis.length; }
+  const ca=document.getElementById("catall");
+  if (ca && !ca.checked){ ca.indeterminate = document.querySelectorAll('[data-act=catsel]:checked').length>0; }
+  const menuOpen = !!S.actsOpen, openedModal = S.modal && S.modal!==wasModal, closedModal = !S.modal && wasModal;
+  if (openedModal){
+    // Dialog opened: move focus into it (search field first, else the first enabled control in the body, else Close)
+    const d = document.querySelector(".dialog");
+    const first = d.querySelector("#cq") || d.querySelector(".d-body input:not(:disabled), .d-body button:not(:disabled)") || d.querySelector("[data-act=close]");
+    first && first.focus();
+  } else if (closedModal){
+    // Dialog or menu closed: return focus to what opened it (menu items fall back to the arrow button)
+    const sel = opener ? `[data-act="${opener.act}"]${opener.id?`[data-id="${opener.id}"]`:""}` : null;
+    const back = (sel && document.querySelector(sel)) || document.querySelector("[data-act=actsmenu]");
+    back && back.focus();
+  } else if (menuOpen && !wasMenu){
+    const it = document.querySelector(".sb-menu button:not(:disabled)") || document.querySelector("[data-act=actsmenu]"); it && it.focus();
+  } else if (aid && aid!=="selpage" && aid!=="catall"){ const el=document.getElementById(aid); if (el){ el.focus(); if (ss!=null && el.setSelectionRange) try{el.setSelectionRange(ss,ss);}catch(_){} } }
+  else if (aeAct){ const el=document.querySelector(`[data-act="${aeAct}"]${aeId?`[data-id="${aeId}"]`:""}${aeV?`[data-v="${aeV}"]`:""}`); el && el.focus(); } // keep keyboard focus on the control that was used
+  wasModal = S.modal; wasMenu = menuOpen;
+  testSync();
+}
+
+/* ---------- events ---------- */
+document.addEventListener("click", e => {
+  if ((S.actsOpen||S.addOpen) && !e.target.closest(".split-btn")){ S.actsOpen=false; S.addOpen=false; if (!e.target.closest("[data-act]")){ render(); return; } }
+  let t = e.target.closest("[data-act]");
+  if (t && !S.modal && !t.closest(".dialog")){ const inMenu = !!t.closest(".sb-menu"); opener = inMenu ? {act:"actsmenu"} : {act:t.dataset.act, id:t.dataset.id}; }
+  // Checkboxes: a click anywhere in the checkbox cell (the 42px circle or the table cell around it) toggles it.
+  // (Rows inside <label class="loc"> already forward clicks natively, so they are left alone.)
+  const cell = !e.target.closest("label") && e.target.closest(".c-chk, .cbcol, .cb");
+  const inp = cell && cell.querySelector('.cb input[type="checkbox"]');
+  if (inp && e.target !== inp){ if (!inp.disabled) inp.click(); return; }
+  if (!t) return;
+  const act=t.dataset.act, id=t.dataset.id, v=t.dataset.v;
+  if (t.tagName==="A") e.preventDefault();
+  switch(act){
+    case "noop": return;
+    case "actsmenu": S.actsOpen=!S.actsOpen; render(); return;
+    case "locgo": switchLoc(id); render(); window.scrollTo({top:0}); return;
+    case "set":
+      if (t.dataset.k==="model"){ if (drafts().length && v==="instant"){ for (const f of drafts()) f.st = f.st==="dAdd"?"pAdd":"pRem"; } S.model=v; try{history.replaceState(null,"","#"+v);}catch(_){} render(); }
+      else if (t.dataset.k==="size"){ fresh({model:S.model,size:v,missed:S.missed,notes:S.notes}); render(); }
+      return;
+    case "missed": S.missed=!S.missed; if (S.missed) seedMissed(); render(); return;
+    case "callin": callin(); return;
+    case "notes": S.notes=!S.notes; render(); return;
+    case "reset": fresh({model:S.model,loc:S.loc,notes:S.notes}); render(); toast("Prototype reset."); return;
+    case "clearq": S.q=""; render(); document.getElementById("q").focus(); return;
+    case "searchopen": S.searchOpen=true; render(); document.getElementById("q").focus(); return;
+    case "filter": S.filter=v; S.shown=25; render(); return;
+    case "showchanges": S.filter="changes"; S.q=""; render(); document.getElementById("fav-title").scrollIntoView({block:"start"}); return;
+    case "sort": S.sort = S.sort.key===v ? {key:v,dir:S.sort.dir==="asc"?"desc":"asc"} : {key:v,dir:(v==="title"||v==="artist")?"asc":"desc"}; render(); return;
+    case "more": S.shown+=25; render(); return;
+    case "toggle": S.selected.has(id)?S.selected.delete(id):S.selected.add(id); render(); return;
+    case "selpage": { const r=rows().slice(0,S.q?undefined:S.shown).filter(f=>!f.st); const all=r.every(f=>S.selected.has(f.id)); r.forEach(f=>all?S.selected.delete(f.id):S.selected.add(f.id)); render(); return; }
+    case "clearsel": S.selected.clear(); render(); return;
+    case "leastplayed": S.q=""; S.filter="all"; S.sort={key:"plays",dir:"asc"}; S.shown=25; render(); return;
+    case "selleast": { S.q=""; S.filter="all"; S.sort={key:"plays",dir:"asc"}; const k=+v; S.shown=Math.max(25,Math.ceil(k/25)*25); S.selected=new Set(S.favs.filter(f=>!f.st).sort((a,b)=>a.plays-b.plays).slice(0,k).map(f=>f.id)); render(); return; }
+    case "catsel": S.catSel.has(id)?S.catSel.delete(id):S.catSel.add(id); render(); return;
+    case "catall": { const ids=[...document.querySelectorAll('[data-act=catsel]')].map(x=>x.dataset.id); const on=ids.filter(i=>S.catSel.has(i)); if (on.length && (on.length===ids.length || on.length>=free())) ids.forEach(i=>S.catSel.delete(i)); else ids.slice(0,free()).forEach(i=>S.catSel.add(i)); render(); return; }
+    case "addsel": addSelected([...document.querySelectorAll('[data-act=catsel]:checked')].map(x=>x.dataset.id)); render(); return;
+    case "removeone": removeSongs([id]); render(); return;
+    case "removesel": S.actsOpen=false; S.modal={type:"removemore",locs:new Set(),here:true}; render(); return; /* opens the location picker (this location checked); Undo in the snackbar, Cancel on rows */
+    case "doremove": S.modal=null; removeSongs([...S.selected]); render(); return;
+    case "undo": unaddo(id); undoOne(id); unremo(id); render(); return;
+    case "unremo": unremo(id); render(); toast("Cancelled. The song stays in Favorites at the other locations."); return;
+    case "addsongs": S.actsOpen=false; S.catSel.clear(); S.modal={type:"addsongs",q:""}; render(); document.getElementById("cq")?.focus(); return;
+    case "addnext": { const M=S.modal; S.modal={type:"addmore",locs:new Set(),here:free()>0,back:{q:M.q||"",tab:M.tab,cat:M.cat,pl:M.pl}}; render(); return; }
+    case "addback": S.modal=Object.assign({type:"addsongs"}, S.modal.back); render(); return;
+    case "cancelpending": S.actsOpen=false; S.modal={type:"cancelpending",locs:new Set(pendingByLoc().map(x=>x.l.id))}; render(); return;
+    case "cpall": { const ids=pendingByLoc().map(x=>x.l.id), L=S.modal.locs; const all=ids.every(i=>L.has(i)); ids.forEach(i=>all?L.delete(i):L.add(i)); render(); return; }
+    case "docancelpending": { const ids=[...S.modal.locs]; S.modal=null; cancelPending(ids); return; }
+    case "catclear": S.catSel.clear(); render(); return;
+    case "addtab": S.modal.tab=v; render(); if (v==="search") document.getElementById("cq")?.focus(); return;
+    case "plselall": { const M=S.modal, P=PLAYLISTS.find(p=>p.id===M.pl), inF=new Set(S.favs.filter(f=>!isRem(f)).map(f=>f.title+"|"+f.artist)); const ids=P.songs().filter(so=>!inF.has(so.title+"|"+so.artist)).map(ensureCat); const all=ids.every(i=>S.catSel.has(i)); ids.forEach(i=>all?S.catSel.delete(i):S.catSel.add(i)); render(); return; }
+    case "addmenu": S.addOpen=!S.addOpen; render(); return;
+    case "addmore": S.addOpen=false; S.modal={type:"addmore",locs:new Set(),here:free()>0}; render(); return;
+    case "doaddmore": { const ids=[...S.catSel], locIds=[...S.modal.locs], here=S.modal.here; S.modal=null; addMore(ids, locIds, here); return; }
+    case "unaddo": unaddo(id); render(); toast("Cancelled. The song won't be added at the other locations."); return;
+    case "removemore": S.actsOpen=false; S.modal={type:"removemore",locs:new Set(),here:true}; render(); return;
+    case "remhere": S.modal.here=!S.modal.here; render(); return;
+    case "doremovemore": { const ids=[...S.selected], locIds=[...S.modal.locs], here=S.modal.here; S.modal=null; removeMore(ids, locIds, here); return; }
+    case "undodrafts": { const snap=drafts().map(f=>({f,st:f.st})); undoDrafts(); render(); toast(`Undid ${plural(snap.length,"change")}.`, ()=>{ for(const s of snap){ if(s.st==="dAdd") S.favs.push(Object.assign(s.f,{st:"dAdd"})); else s.f.st="dRem"; } }); return; }
+    case "review": S.modal={type:"review",locs:new Set(),showLocs:false}; render(); return;
+    case "morelocs": S.modal.showLocs=!S.modal.showLocs; render(); return;
+    case "loc": { const L=S.modal.locs; L.has(id)?L.delete(id):L.add(id); render(); return; }
+    case "send": send(S.modal.showLocs?S.modal.locs.size:0); return;
+    case "copy": S.actsOpen=false; S.modal={type:"copy",locs:new Set()}; render(); return;
+    case "docopy": { const ids=[...S.selected], locIds=[...S.modal.locs]; S.modal=null; S.selected.clear(); copySongs(ids, locIds); return; }
+    case "uncopy": uncopy(id); render(); return;
+    case "plopen": S.modal={type:"pl",cat:"Essentials",pl:null,sel:new Set()}; render(); return;
+    case "plcat": S.modal.cat=v; render(); return;
+    case "plpick": S.modal.pl=id; S.modal.sel=new Set(); render(); return;
+    case "plback": S.modal.pl=null; S.modal.sel=new Set(); render(); return;
+    case "plsel": { const M=S.modal; M.sel.has(id)?M.sel.delete(id):M.sel.add(id); render(); return; }
+    case "plall": case "pltop": {
+      const M=S.modal, sg=PLAYLISTS.find(p=>p.id===M.pl).songs(), fr=free();
+      const avail=sg.map((so,i)=>String(i)).filter(i=>!inFavs(sg[+i]));
+      const lim = act==="pltop" ? +v : fr;
+      if (act==="plall" && M.sel.size) M.sel=new Set(); else M.sel=new Set(avail.slice(0, Math.max(0,Math.min(lim, fr))));
+      render(); return; }
+    case "pladd": { const M=S.modal, P=PLAYLISTS.find(p=>p.id===M.pl), sg=P.songs(); addFromPlaylist([...M.sel].map(i=>sg[+i]), P.name); return; }
+    case "close": S.modal=null; render(); return;
+    case "stub": toast(`${v} isn't built in this prototype.`); return;
+  }
+});
+document.addEventListener("input", e => { const k=e.target.dataset.input; if (k==="q"||k==="lq"){ S[k]=e.target.value; render(); } else if (k==="cq" && S.modal){ S.modal.q=e.target.value; render(); } });
+document.addEventListener("keydown", e => {
+  if (S.actsOpen && (e.key==="ArrowDown"||e.key==="ArrowUp")){
+    const its=[...document.querySelectorAll(".sb-menu button:not(:disabled)")]; if (its.length){ e.preventDefault(); const i=its.indexOf(document.activeElement); its[(i+(e.key==="ArrowDown"?1:-1)+its.length)%its.length].focus(); } return;
+  }
+  if (S.modal && e.key==="Tab"){
+    const f=[...document.querySelectorAll(".dialog button:not(:disabled), .dialog input:not(:disabled)")]; if (!f.length) return;
+    const i=f.indexOf(document.activeElement);
+    if (e.shiftKey && i<=0){ e.preventDefault(); f[f.length-1].focus(); } else if (!e.shiftKey && i===f.length-1){ e.preventDefault(); f[0].focus(); }
+  }
+});
+document.addEventListener("keydown", e => { if (e.key==="Escape" && (S.actsOpen||S.addOpen)){ S.actsOpen=false; S.addOpen=false; render(); document.querySelector("[data-act=actsmenu]")?.focus(); return; } if (e.key==="Escape" && S.modal){ S.modal=null; render(); } });
+
+
+document.body.classList.toggle("test", TEST);
+fresh(); if (TEST && TEST_START==="pending") seedPending(); render();
+})();
+</script>
