@@ -426,6 +426,7 @@ tr.rem td{color:var(--text-2)}
 .sb-menu button{display:block;width:100%;text-align:left;border:0;background:none;padding:6px 16px;font-size:16px;line-height:24px;letter-spacing:.15px;color:var(--text);white-space:nowrap}
 .sb-menu button:hover,.sb-menu button:focus-visible{background:var(--hover);outline:0}
 .sb-menu button:disabled{color:rgba(0,0,0,.38);background:none;cursor:default}
+.sb-menu .mi-hint{display:block;font-size:12px;line-height:16px;letter-spacing:.4px;color:var(--text-2)}
 @media (prefers-reduced-motion:reduce){.toast,.btn,tbody tr{transition:none}}
 .c-last,.c-added,td.n{white-space:nowrap}
 @media (max-width:1500px){.c-avail{display:none}}
@@ -956,7 +957,7 @@ function addMore(cids, locIds, here){
   const otherN = Object.values(refs).reduce((a,r)=>a+r.length,0), otherLocs = new Set(Object.values(refs).flat().map(r=>r.loc)).size;
   const parts = [];
   if (added.length) parts.push(`${plural(added.length,"song")} ${otherN?"here":""}`.trim());
-  if (otherN) parts.push(`${plural(otherN,"add")} at ${plural(otherLocs,"other location")}`);
+  if (otherN) parts.push(added.length ? `${plural(otherN,"add")} at ${plural(otherLocs,"other location")}` : `${plural(cids.length,"song")} at ${plural(otherLocs,"other location")}`);
   const names = a => a.length<=2 ? a.map(t=>`“${t}”`).join(" and ") : `“${a[0]}”, “${a[1]}” and ${a.length-2} more`;
   const msg = parts.length ? `Adding ${parts.join(" and ")} to Favorites ${NEXT}.` : `Nothing was added.`;
   const miss = (noRoom.length ? ` No room here for ${names(noRoom)}.` : "") + (skipped ? ` ${plural(skipped,"add")} skipped at other locations (already there or no room).` : "");
@@ -1073,14 +1074,21 @@ function toolbar(){
   const ch = drafts().length + pendings().length;
   return `<div class="toolbar">
     ${S.filter==="changes"?`<span class="fchip">Changes only<button data-act="filter" data-v="all" aria-label="Show all songs">${I.cancel}</button></span>`:""}
-    <span class="split-btn"><button class="btn solid sb-main" data-act="addsongs">Add songs</button><button class="btn solid sb-arrow" data-act="actsmenu" aria-label="More actions" aria-haspopup="menu" aria-expanded="${!!S.actsOpen}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.71 11.71l2.59 2.59c.39.39 1.02.39 1.41 0l2.59-2.59c.63-.63.18-1.71-.71-1.71H9.41c-.89 0-1.33 1.08-.7 1.71z"/></svg></button>${S.actsOpen?`<div class="sb-menu" role="menu"><button role="menuitem" data-act="copy" ${S.selected.size?"":"disabled"}>Add selected songs to other locations</button></div>`:""}</span>
+    <span class="split-btn"><button class="btn solid sb-main" data-act="addsongs">Add songs</button><button class="btn solid sb-arrow" data-act="actsmenu" aria-label="More actions" aria-haspopup="menu" aria-expanded="${!!S.actsOpen}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.71 11.71l2.59 2.59c.39.39 1.02.39 1.41 0l2.59-2.59c.63-.63.18-1.71-.71-1.71H9.41c-.89 0-1.33 1.08-.7 1.71z"/></svg></button>${S.actsOpen?`<div class="sb-menu" role="menu"><button role="menuitem" data-act="copy" ${S.selected.size?"":"disabled"}>Add selected songs to other locations${S.selected.size?"":`<span class="mi-hint">Select songs in your Favorites first</span>`}</button></div>`:""}</span>
     <button class="btn" data-act="removesel" ${S.selected.size?"":"disabled"}>Remove from Favorites</button>
     ${pendingByLoc().length?`<button class="btn" data-act="cancelpending">Cancel pending changes</button>`:""}
-    <span class="results num">${S.selected.size ? `<b>${S.selected.size}</b> of ${count()} selected` : `<b>${count()}</b> of ${CAP} songs`}</span>${drafts().length&&!S.selected.size?`<span class="tb-actions"><button class="btn text" data-act="undodrafts">Undo all</button><button class="btn solid" data-act="review" ${count()>CAP?"disabled":""}>Review and send ${drafts().length}</button></span>`:""}
+    <span class="results num">${S.selected.size ? `<b>${S.selected.size}</b> of ${count()} selected${selAllOffer()}` : `<b>${count()}</b> of ${CAP} songs${pendings().length?` <span class="t2">after ${NEXT.replace("tonight at ","")}</span>`:""}`}</span>${drafts().length&&!S.selected.size?`<span class="tb-actions"><button class="btn text" data-act="undodrafts">Undo all</button><button class="btn solid" data-act="review" ${count()>CAP?"disabled":""}>Review and send ${drafts().length}</button></span>`:""}
   </div>
   <div class="noterow">${note("v","The search box only filters your Favorites. Add songs (in the arrow menu) searches the catalog, then asks which locations. Try “Taylor”, “Foo” or “Cash”.")}${note("a","Top Plays is gone as a way to add songs (Vishal: why make popular songs cheaper?). Plays stay as a column to help decide what to remove. Quick Manage is removed.")}</div>`;
 }
 
+/* After "select all shown" with more rows not loaded yet, offer the rest (the pattern Gmail uses). */
+function selAllOffer(){
+  if (S.q) return "";
+  const all = rows().filter(f=>!f.st), shown = all.slice(0,S.shown);
+  if (all.length<=shown.length || !shown.every(f=>S.selected.has(f.id)) || all.every(f=>S.selected.has(f.id))) return "";
+  return ` · <button class="linkbtn" data-act="selall">Select all ${all.length}</button>`;
+}
 function selBar(){
   if (!S.selected.size) return "";
   return `<div class="selbar" role="region" aria-label="Selection"><b class="num">${plural(S.selected.size,"song")} selected</b>
@@ -1092,7 +1100,8 @@ function selBar(){
 function rows(){
   let r = S.favs.slice();
   const q = S.q.trim().toLowerCase();
-  if (q) r = r.filter(f=>(f.title+" "+f.artist+" "+f.style).toLowerCase().includes(q));
+  // Selected songs stay in the list while searching, so a selection never hides behind the search (same as picks in Add songs).
+  if (q) r = r.filter(f=>S.selected.has(f.id) || (f.title+" "+f.artist+" "+f.style).toLowerCase().includes(q));
   if (S.filter==="changes") r = r.filter(f=>f.st);
   const k=S.sort.key, d=S.sort.dir==="asc"?1:-1;
   r.sort((a,b)=>{ if(k==="title"||k==="artist") return a[k].localeCompare(b[k])*d; let x=a[k],y=b[k]; if(x===null)x=-1; if(y===null)y=-1; return (x-y)*d || a.title.localeCompare(b.title); });
@@ -1136,11 +1145,13 @@ function copySongs(ids, locIds){
    and the source row gets a "Leaving Favorites at N other locations" status until the 2 AM update. */
 function removeMore(ids, locIds, here){
   const snap = S.favs.slice(), prevSt = new Map(S.favs.map(f=>[f,[f.st,f.chg]]));
-  const refsBySong = {};
+  const refsBySong = {}, cancelledAdds = [];
   for (const lid of locIds){
     const st = S.ls[lid] || (S.ls[lid] = initLoc(lid));
     for (const id of ids){
       const f = S.favs.find(x=>x.id===id); if (!f) continue;
+      const pa = st.favs.find(x=>x.title===f.title && x.artist===f.artist && x.st==="pAdd");
+      if (pa){ cancelledAdds.push({st, row:pa, i:st.favs.indexOf(pa)}); st.favs.splice(st.favs.indexOf(pa),1); continue; }
       const t = st.favs.find(x=>x.title===f.title && x.artist===f.artist && !x.st); if (!t) continue;
       t.st = "pRem"; t.chg = ++chSeq;
       (refsBySong[id] = refsBySong[id] || []).push({loc:lid, fid:t.id});
@@ -1151,10 +1162,21 @@ function removeMore(ids, locIds, here){
     f.remo = {refs:(f.remo?f.remo.refs:[]).concat(refs)}; f.chg = ++chSeq;
   }
   if (here) removeSongs(ids); else S.selected.clear();
+  // "Adding at N locations" links that pointed at a cancelled add lose that location
+  const gone = new Set(cancelledAdds.map(c=>c.row.id)), linkSnap = [];
+  for (const l of LOCATIONS){ const st=locState(l.id); if (!st) continue;
+    for (const x of st.favs) for (const k of ["copy","addo"]) if (x[k] && x[k].refs.some(r=>gone.has(r.fid))){
+      linkSnap.push([x,k,x[k]]); const refs=x[k].refs.filter(r=>!gone.has(r.fid)); if (refs.length) x[k]={refs}; else delete x[k]; }
+  }
   render();
-  const n = locIds.length + (here?1:0);
+  const n = new Set(Object.values(refsBySong).flat().map(r=>r.loc)).size + (here?1:0); // locations where something actually leaves
   const when = here && S.model==="draft" ? "when you send (here) and "+NEXT+" (other locations)" : NEXT;
-  toast(`${plural(ids.length,"song")} will be removed from Favorites at ${plural(n,"location")} ${when}.`, () => {
+  const remN = Object.values(refsBySong).reduce((a,r)=>a+r.length,0) + (here?ids.length:0);
+  const cx = cancelledAdds.length ? ` ${plural(cancelledAdds.length,"pending add")} cancelled at other locations.` : "";
+  const msg = remN ? `${plural(ids.length,"song")} will be removed from Favorites at ${plural(n,"location")} ${when}.` : "";
+  toast((msg+cx).trim(), () => {
+    for (const c of cancelledAdds.slice().reverse()) c.st.favs.splice(Math.min(c.i,c.st.favs.length),0,c.row);
+    for (const [x,k,v] of linkSnap) x[k]=v;
     for (const id of ids) unremo(id);
     S.favs.splice(0, S.favs.length, ...snap); for (const [f,[st,chg]] of prevSt){ f.st=st; f.chg=chg; }
   });
@@ -1216,7 +1238,7 @@ function grid(){
   const r = rows(), q=S.q.trim();
   const head = "";
   if (!r.length){
-    return head + `<div class="empty">${q?`No favorites match “${esc(q)}”.`:S.filter==="changes"?"No changes. Songs you add or remove show here until the jukebox updates.":"No favorites yet."}</div>`;
+    return head + `<div class="empty">${q?`No favorites match “${esc(q)}”. <button class="linkbtn" data-act="addsongs" data-v="${esc(q)}">Search the catalog for “${esc(q)}”</button>`:S.filter==="changes"?"No changes. Songs you add or remove show here until the jukebox updates.":"No favorites yet."}</div>`;
   }
   const vis = r.slice(0, q?r.length:S.shown);
   const th=(k,l,cls)=>{const on=S.sort.key===k;return `<th class="${cls||""}" ${on?`aria-sort="${S.sort.dir==="asc"?"ascending":"descending"}"`:""}><button data-act="sort" data-v="${k}">${l}${on?I.arrow.replace('class="ico"',`class="ico ${S.sort.dir==="asc"?"":"desc"}"`):""}</button></th>`;};
@@ -1366,16 +1388,18 @@ function modal(){
     const full = fr<=0?`<div class="alert warn" style="margin:0">${I.warn}<div class="a-msg">Favorites is full here. You can still add these songs to other locations in the next step.</div></div>`:`<p class="caption num">Room for ${plural(fr,"more song")} at ${esc(curLoc().name)}.</p>`;
     let inner;
     if (tab==="search"){
-      const res = q ? CATALOG.filter(c=>!inFav.has(c.title+"|"+c.artist) && (c.title+" "+c.artist+" "+c.style).toLowerCase().includes(q)).slice(0,8) : [];
+      // Songs already in Favorites show too (greyed, "In Favorites"), the same as in playlists; songs you can add come first.
+      const res = q ? PL_POOL.filter(so=>(so.title+" "+so.artist+" "+so.style).toLowerCase().includes(q)).map(so=>{ const id=ensureCat(so); return CATALOG.find(c=>c.id===id); }).sort((a,b)=>inFav.has(a.title+"|"+a.artist)-inFav.has(b.title+"|"+b.artist)).slice(0,8) : [];
       const picked = CATALOG.filter(c=>S.catSel.has(c.id) && !res.includes(c)); // earlier picks stay visible when the search changes
       inner = `<div class="search" style="flex:none;width:100%">${I.search}<input id="cq" data-input="cq" type="search" autocomplete="off" aria-label="Search the catalog" placeholder="Search the catalog by song or artist" value="${esc(m.q||"")}"></div>${full}
-        <div class="loclist">${picked.map(row).join("")}${res.map(row).join("") || (picked.length?"":`<div class="empty" style="padding:24px">${q?`No songs match “${esc(m.q)}” in the catalog.`:`Search for a song or artist, or <button class="linkbtn" data-act="addtab" data-v="pl">browse TouchTunes playlists</button>.`}</div>`)}</div>`;
+        <div class="loclist">${picked.map(row).join("")}${res.map(row).join("") || (picked.length?"":`<div class="empty" style="padding:24px">${q?`No songs match “${esc(m.q)}” in the catalog.`:`Search for a song or artist, or <button class="linkbtn" data-act="addtab" data-v="pl">browse TouchTunes playlists</button>.`}</div>`)}</div>
+        ${q||picked.length?`<p class="caption">Or <button class="linkbtn sm" data-act="addtab" data-v="pl">browse TouchTunes playlists</button></p>`:""}`;
     } else if (!m.pl){
       const cat = m.cat||"Essentials", pls = PLAYLISTS.filter(p=>p.cat===cat);
       inner = `<div class="pl-tools"><button class="btn sm text" data-act="addtab" data-v="search">${I.back}Back to search</button></div>${full}<div class="pl-split"><div class="pl-cats" role="tablist" aria-label="Playlist categories">${PL_CATS.map(c=>`<button role="tab" aria-selected="${c===cat}" data-act="plcat" data-v="${esc(c)}">${esc(c)}</button>`).join("")}</div>
         <ul class="pl-list">${pls.map(p=>{ const sg=p.songs(), n=sg.filter(so=>!inFavs(so)).length, picked=sg.filter(so=>S.catSel.has(ensureCat(so))).length; return `<li><button data-act="plpick" data-id="${p.id}"><span class="grow"><span class="ttl">${esc(p.name)}</span><span class="t2 num">${plural(sg.length,"song")}${n<sg.length?` · ${sg.length-n} already in Favorites`:""}${picked?` · ${picked} selected`:""}</span></span>${I.chev}</button></li>`; }).join("")}</ul></div>`;
     } else {
-      const P = PLAYLISTS.find(p=>p.id===m.pl), sg = P.songs().map(so=>CATALOG.find(c=>c.id===ensureCat(so)));
+      const P = PLAYLISTS.find(p=>p.id===m.pl), sg = P.songs().map(so=>{ const id=ensureCat(so); return CATALOG.find(c=>c.id===id); });
       const avail = sg.filter(c=>!inFav.has(c.title+"|"+c.artist)), allOn = avail.length && avail.every(c=>S.catSel.has(c.id));
       inner = `${full}<div class="pl-tools"><button class="btn sm text" data-act="plback">${I.back}All playlists</button><span class="body2"><b>${esc(P.name)}</b> · <span class="num">${plural(avail.length,"song")} not in Favorites yet</span></span>${avail.length?`<button class="btn sm text" data-act="plselall">${allOn?"Clear":"Select all"}</button>`:""}</div>
         <div class="loclist" style="max-height:420px;overflow:auto">${sg.map(row).join("")}</div>`;
@@ -1401,11 +1425,13 @@ function modal(){
     const k=S.selected.size; title="Remove from Favorites";
     const sel=[...S.selected].map(id=>S.favs.find(x=>x.id===id)).filter(Boolean);
     // Only suggest locations that have at least one of the selected songs
-    const cands=otherLocs().map(l=>({l,has:sel.filter(f=>locHasSong(l.id,f)).length})).filter(c=>c.has>0);
+    const cands=otherLocs().map(l=>{ const st=locState(l.id);
+      const adding=st?sel.filter(f=>st.favs.some(x=>x.st==="pAdd"&&x.title===f.title&&x.artist===f.artist)).length:0;
+      return {l,has:sel.filter(f=>locHasSong(l.id,f)).length,adding}; }).filter(c=>c.has>0);
     const hidden=otherLocs().length-cands.length, n=m.locs.size+(m.here?1:0), here=curLoc();
     body = `<p class="body2">Remove ${plural(k,"song")} from Favorites at:</p><div class="loclist">
         <label class="loc">${CB(`data-act="remhere" ${m.here?"checked":""}`)}<span class="grow">${esc(here.name)} <span class="t2">${here.id}</span><span class="t2" style="display:block">This location</span></span></label>
-        ${cands.map(({l,has})=>`<label class="loc">${CB(`data-act="loc" data-id="${l.id}" ${m.locs.has(l.id)?"checked":""}`)}<span class="grow">${esc(l.name)} <span class="t2">${l.code}</span>${has<k?`<span class="t2" style="display:block">Has ${has} of ${k}</span>`:""}</span></label>`).join("")}</div>
+        ${cands.map(({l,has,adding})=>`<label class="loc">${CB(`data-act="loc" data-id="${l.id}" ${m.locs.has(l.id)?"checked":""}`)}<span class="grow">${esc(l.name)} <span class="t2">${l.code}</span>${has<k?`<span class="t2" style="display:block">Has ${has} of ${k}</span>`:""}${adding?`<span class="t2" style="display:block">${adding===k?(k===1?"Being added":"All being added"):`${adding} being added`} at 2 AM. Removing cancels ${adding===1?"that add":"those adds"}.</span>`:""}</span></label>`).join("")}</div>
       ${!cands.length?`<p class="caption">No other location has ${k===1?"this song":"these songs"} in Favorites.</p>`:hidden?`<p class="caption">${plural(hidden,"location")} not shown because ${hidden===1?"it doesn't have":"they don't have"} ${k===1?"this song":"these songs"}.</p>`:""}
       <div class="box">${I.info}<span>Songs leave Favorites at each location ${NEXT}. You can cancel until then.</span></div>`;
     foot = `<button class="btn text" data-act="close">Cancel</button><button class="btn solid" data-act="doremovemore" ${n?"":"disabled"}>Remove from ${plural(n,"location")}</button>`;
@@ -1527,8 +1553,10 @@ document.addEventListener("click", e => {
     case "showchanges": S.filter="changes"; S.q=""; render(); document.getElementById("fav-title").scrollIntoView({block:"start"}); return;
     case "sort": S.sort = S.sort.key===v ? {key:v,dir:S.sort.dir==="asc"?"desc":"asc"} : {key:v,dir:(v==="title"||v==="artist")?"asc":"desc"}; render(); return;
     case "more": S.shown+=25; render(); return;
+    case "selall": rows().filter(f=>!f.st).forEach(f=>S.selected.add(f.id)); render(); return;
     case "toggle": S.selected.has(id)?S.selected.delete(id):S.selected.add(id); render(); return;
-    case "selpage": { const r=rows().slice(0,S.q?undefined:S.shown).filter(f=>!f.st); const all=r.every(f=>S.selected.has(f.id)); r.forEach(f=>all?S.selected.delete(f.id):S.selected.add(f.id)); render(); return; }
+    case "selpage": { const r=rows().slice(0,S.q?undefined:S.shown).filter(f=>!f.st); const all=r.every(f=>S.selected.has(f.id));
+      if (all && !S.q){ S.selected.clear(); render(); return; } /* unticking the header clears the whole selection, including "Select all N" */ r.forEach(f=>all?S.selected.delete(f.id):S.selected.add(f.id)); render(); return; }
     case "clearsel": S.selected.clear(); render(); return;
     case "leastplayed": S.q=""; S.filter="all"; S.sort={key:"plays",dir:"asc"}; S.shown=25; render(); return;
     case "selleast": { S.q=""; S.filter="all"; S.sort={key:"plays",dir:"asc"}; const k=+v; S.shown=Math.max(25,Math.ceil(k/25)*25); S.selected=new Set(S.favs.filter(f=>!f.st).sort((a,b)=>a.plays-b.plays).slice(0,k).map(f=>f.id)); render(); return; }
@@ -1536,11 +1564,15 @@ document.addEventListener("click", e => {
     case "catall": { const ids=[...document.querySelectorAll('[data-act=catsel]')].map(x=>x.dataset.id); const on=ids.filter(i=>S.catSel.has(i)); if (on.length && (on.length===ids.length || on.length>=free())) ids.forEach(i=>S.catSel.delete(i)); else ids.slice(0,free()).forEach(i=>S.catSel.add(i)); render(); return; }
     case "addsel": addSelected([...document.querySelectorAll('[data-act=catsel]:checked')].map(x=>x.dataset.id)); render(); return;
     case "removeone": removeSongs([id]); render(); return;
-    case "removesel": S.actsOpen=false; S.modal={type:"removemore",locs:new Set(),here:true}; render(); return; /* opens the location picker (this location checked); Undo in the snackbar, Cancel on rows */
+    case "removesel": { S.actsOpen=false;
+      const sel=[...S.selected].map(x=>S.favs.find(f=>f.id===x)).filter(Boolean);
+      // Nothing to choose when no other location has these songs: remove here right away (Undo in the snackbar).
+      if (!otherLocs().some(l=>sel.some(f=>locHasSong(l.id,f)))){ removeMore([...S.selected], [], true); return; }
+      S.modal={type:"removemore",locs:new Set(),here:true}; render(); return; } /* opens the location picker (this location checked); Undo in the snackbar, Cancel on rows */
     case "doremove": S.modal=null; removeSongs([...S.selected]); render(); return;
     case "undo": unaddo(id); undoOne(id); unremo(id); render(); return;
     case "unremo": unremo(id); render(); toast("Cancelled. The song stays in Favorites at the other locations."); return;
-    case "addsongs": S.actsOpen=false; S.catSel.clear(); S.modal={type:"addsongs",q:""}; render(); document.getElementById("cq")?.focus(); return;
+    case "addsongs": S.actsOpen=false; S.catSel.clear(); S.modal={type:"addsongs",q:v||""}; render(); document.getElementById("cq")?.focus(); return;
     case "addnext": { const M=S.modal; S.modal={type:"addmore",locs:new Set(),here:free()>0,back:{q:M.q||"",tab:M.tab,cat:M.cat,pl:M.pl}}; render(); return; }
     case "addback": S.modal=Object.assign({type:"addsongs"}, S.modal.back); render(); return;
     case "cancelpending": S.actsOpen=false; S.modal={type:"cancelpending",locs:new Set(pendingByLoc().map(x=>x.l.id))}; render(); return;
